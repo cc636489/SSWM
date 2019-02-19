@@ -7,7 +7,7 @@ from make_sto_ijk import make_sto_ijk
 from make_sto_modes import make_sto_modes
 from make_mesh import make_mesh
 from make_bath import make_bath
-from make_ic import make_initial_object_func
+from make_ic import make_initial_object_list
 from make_bc import make_boundary_object_list
 from make_wind import MakeWind
 from make_les import LES
@@ -135,10 +135,10 @@ class ModelInitiate:
 
     def make_ic(self):
         if self.inputs.include_supg or self.inputs.include_crosswind:
-            u_ic_function, eta_ic_function = make_initial_object_func(self.inputs.initial_u, self.inputs.initial_eta,
+            u_ic_function, eta_ic_function = make_initial_object_list(self.inputs.initial_u, self.inputs.initial_eta,
                                                                       self.basis_str, self.W, self.P, True)
         else:
-            u_ic_function, eta_ic_function = make_initial_object_func(self.inputs.initial_u, self.inputs.initial_eta,
+            u_ic_function, eta_ic_function = make_initial_object_list(self.inputs.initial_u, self.inputs.initial_eta,
                                                                       self.basis_str, self.W, self.P, False)
         self.u0.assign(u_ic_function)
         self.u00.assign(u_ic_function)

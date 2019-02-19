@@ -2,7 +2,7 @@
 # Input parameter
 ##################################################################
 # output file name string
-input_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/7-NS-github/input/"
+input_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/7-SSWM-github/input/"
 output_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/**_regression_test/"
 output_str = "test4_rotation_generalized_0.3_"
 bath_file = "inlet_adh_sswm_mesh_rotation_finer.nc"

@@ -12,6 +12,8 @@ class ModelReadInput:
         self.output_str = output_str
         self.wind_file = wind_file
         self.bath_file = bath_file
+        self.mesh_file = mesh_file
+
 
         self.n_sample = n_sample
 

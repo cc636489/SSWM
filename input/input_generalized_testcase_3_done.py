@@ -2,7 +2,7 @@
 # Input parameter
 ##################################################################
 # output file name string
-input_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/7-NS-github/input/"
+input_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/7-SSWM-github/input/"
 output_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/**_regression_test/"
 output_str = "test3_generalized_"
 bath_file = "hump_adcirc_sswm.nc"

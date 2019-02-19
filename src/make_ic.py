@@ -5,7 +5,7 @@ from make_sto_modes import make_sto_modes
 from random import random, seed
 
 
-def make_initial_object_func(init_u_dict, init_eta_dict, pc_basis_str, u_function_space, eta_function_space,
+def make_initial_object_list(init_u_dict, init_eta_dict, pc_basis_str, u_function_space, eta_function_space,
                              randomness):
 
     n_modes = pc_basis_str.get("n_modes")
