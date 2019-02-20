@@ -1,4 +1,4 @@
-
+""" function to import mesh, set up bathymetry, initial condition and boundary condition """
 
 from model_initiate import ModelInitiate
 

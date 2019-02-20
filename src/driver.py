@@ -1,4 +1,4 @@
-
+""" main function for driving stochastic shallow water model. """
 
 from driver_model_read_input import model_read_input_driver
 from driver_model_initiate import model_initiate_driver

@@ -1,4 +1,4 @@
-
+""" function to formulate the weak form of deterministic and stochastic shallow water equation. """
 
 from model_formulate import DetModelFormulate, StoModelFormulate
 

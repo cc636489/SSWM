@@ -1,9 +1,9 @@
 
 
 import unittest
-from make_mesh import make_mesh
-from make_bath import make_bath
-from make_sto_basis import make_sto_basis
+from src.make_mesh import make_mesh
+from src.make_bath import make_bath
+from src.make_sto_basis import make_sto_basis
 from fenics import FiniteElement, FunctionSpace, MixedElement
 
 

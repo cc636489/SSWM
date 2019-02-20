@@ -1,9 +1,84 @@
-
+""" class of reading input. """
 
 from input.input_generalized import *
 
 
 class ModelReadInput:
+    """
+    Model Read Input Class.
+
+    Parameters
+    ----------
+    input_dir : str
+        The directory of input files.
+
+    output_dir : str
+        The directory of output files.
+
+    output_str : str
+        name string of output files.
+
+    n_sample : int
+        number of sampling points in random space due to uncertain inputs.
+
+    test_node_x : float
+        x coordinate of a physical point in the domain, selected for statistical analysis.
+
+    test_node_y : float
+        y coordinate of a physical point in the domain, selected for statistical analysis.
+
+    dist_name : str
+        the name of distribution, either "uniform" or "Gaussian".
+
+    sto_ploy_deg : int
+        the degree of stochastic polynomial chaos basis.
+
+    sto_poly_dim : int
+        the dimension of stochastic polynomial chaos basis.
+
+    coefficient : list
+        it represents the lower and upper bound of "uniform" distribution.
+
+    domain : dict
+        mesh type and mesh file.
+
+    sto_viscosity : str
+        uncertain expression of viscosity. "2*x*q0 + 3*y*q1"
+
+    sto_bottomDrag : str
+        uncertain expression of bottom drag(friction) coefficient.
+
+    sto_windDrag : str
+        uncertain expression of wind drag coefficient.
+
+    tidal_amplitude : float
+        M2 tides amplitude
+
+    tidal_period : float
+        M2 tides period
+
+    start_time : float
+        model run start time
+
+    end_time : float
+        model run end time
+
+    time_step : float
+        delta t.
+
+    theta : float
+        explicit implicit parameter, 0:explicit, 1:implicit
+
+    bathymetry : dict
+        types of bathymetry input, either builtin or import bath file
+
+    initial_u : dict
+        types of initial input
+
+    boundary_u : dict
+        types of initial input
+
+    """
 
     def __init__(self):
 
@@ -13,7 +88,6 @@ class ModelReadInput:
         self.wind_file = wind_file
         self.bath_file = bath_file
         self.mesh_file = mesh_file
-
 
         self.n_sample = n_sample
 
@@ -41,7 +115,7 @@ class ModelReadInput:
         self.include_supg = include_supg
         self.include_crosswind = include_crosswind
         self.les_parameters = les_parameters
-        self.DEBUG_mode = DEBUG_mode  # not implemented yet
+        self.DEBUG_mode = DEBUG_mode  # not fully implemented yet
         self.USE_pvd = USE_pvd
 
         self.tidal_amplitude = tidal_amplitude

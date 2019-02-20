@@ -1,4 +1,4 @@
-
+""" function to solve the stochastic shallow water equation. """
 
 from model_run import ModelRun
 
