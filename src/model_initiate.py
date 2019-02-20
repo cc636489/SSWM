@@ -18,6 +18,91 @@ ffc_options = {"optimize": True, "eliminate_zeros": True, "precompute_basis_cons
 
 
 class ModelInitiate:
+    """
+    class to import mesh, set up initial condition and boundary condition, prepare wind input at each time step.
+
+    Parameters:
+    -----------
+    inputs: Object
+        object of class ModelReadInput from model_read_input.py.
+
+    theta: float
+        explicit implicit parameter.
+
+    n_time_step : int
+        number of time step.
+
+    n_modes : int
+        number of stochastic modes, it equals combination(sto_deg, sto_deg + sto_dim)
+
+    B : FunctionSpace object
+        object of Fenics.FunctionSpace class, used to build up shape function w.r.t. the domain.
+        B is scalar functionspace in physical domain.
+
+    C : FunctionSpace object
+        object of Fenics.FunctionSpace class, used to build up shape function w.r.t. the domain.
+        C is 2D vector functionspace in physical domain.
+
+    W : FunctionSpace object
+        object of Fenics.FunctionSpace class, used to build up shape function w.r.t. the domain.
+        W is n_modes vector functionspace in stochastic domain.
+
+    P : FunctionSpace object
+        object of Fenics.FunctionSpace class, used to build up shape function w.r.t. the domain.
+        B is 2 * n_modes vector functionspace in stochastic domain.
+
+    v : Function object
+        test function for water velocity of 2 * n_modes vector functionspace in stochastic domain
+
+    u : Function object
+        trial function of 2 * n_modes vector functionspace in stochastic domain
+
+    q : Function object
+        test function for surface elevation of n_modes vector functionspace in stochastic domain
+
+    eta : Function object
+        trial function of n_modes vector functionspace in stochastic domain.
+
+    u00 : Function object
+        water velocity at n-1 time step.
+
+    u0 : Function object
+        water velocity at n time step.
+
+    ut : Function object
+        water velocity at the tentative time step, which is between (n,n+1) time step.
+
+    u1 : Function object
+        water velocity at the (n+1)th time step.
+
+    eta0 : Function object
+        surface elevation at the nth time step.
+
+    eta1 : Function object
+        surface elevation at the (n+1)th time step.
+
+    H : Function object
+        total water column height.
+
+    u_bc_object_list : list
+        a list of velocity related boundary condition. like free slip, impenetration, etc.
+
+    eta_bc_object_list : list
+        a list of surface elevation boundary condition. like free slip, impenetration, etc.
+
+    uTimeDependent : bool
+        True only if any boundary conditions in the u_bc_object_list have time dependence.
+
+    etaTimeDependent : bool
+        True only if any boundary conditions in the eta_bc_object_list have time dependence.
+
+    u_list_expression : object
+        object of Fenics.Expression class, for the built of water velocity boundary condition.
+
+    eta_list_expression : object
+        object of FEnics.Expression class, for the built of surface elevation boundary condition.
+
+    """
 
     def __init__(self, inputs):
 
@@ -81,7 +166,8 @@ class ModelInitiate:
         self.nu_expression_object_list = []
         self.les = []
 
-    def make_stochastic_basic(self):
+    def make_stochastic_basis(self):
+        """ build up stochastic basis function in random space. """
         self.basis_str = make_sto_basis(self.inputs.dist_name, self.inputs.sto_poly_deg,
                                         self.inputs.sto_poly_dim, self.inputs.coefficient)
         self.stoIJK = make_sto_ijk(self.basis_str)
@@ -90,9 +176,11 @@ class ModelInitiate:
         self.ort_pol = self.basis_str.get("basis")
 
     def make_mesh(self):
+        """ build up mesh object which is compatible with Fenics."""
         self.mesh = make_mesh(self.inputs.domain)
 
     def make_function_space(self):
+        """ prepare necessary function space for entire simulation. """
         vv = VectorElement(family='CG', cell=self.mesh.ufl_cell(), degree=2, dim=2)
         qq = FiniteElement(family='CG', cell=self.mesh.ufl_cell(), degree=1)
         self.B = FunctionSpace(self.mesh, qq)
@@ -112,6 +200,7 @@ class ModelInitiate:
             self.P = FunctionSpace(self.mesh, MixedElement(eval(string_q)))
 
     def make_function(self):
+        """ Initialize input & solution functions for entire simulation. """
         self.v = TestFunction(self.W)
         self.u = TrialFunction(self.W)
         self.q = TestFunction(self.P)
@@ -127,6 +216,7 @@ class ModelInitiate:
         self.wind_vector = Function(self.C, name="wind_xy")
 
     def make_bath(self):
+        """ build up bathymetry object which is compatible with Fenics. """
         project_bottom_function = make_bath(self.inputs.bathymetry, self.basis_str, self.P)
         if self.inputs.linear_divergence:
             self.H = project_bottom_function
@@ -134,6 +224,7 @@ class ModelInitiate:
             self.H = project_bottom_function + self.eta0
 
     def make_ic(self):
+        """ build up initial condition object which is compatible with Fenics. """
         if self.inputs.include_supg or self.inputs.include_crosswind:
             u_ic_function, eta_ic_function = make_initial_object_list(self.inputs.initial_u, self.inputs.initial_eta,
                                                                       self.basis_str, self.W, self.P, True)
@@ -147,12 +238,14 @@ class ModelInitiate:
         self.eta1.assign(eta_ic_function)
 
     def make_bc(self):
+        """ build up boundary condition which is compatible with Fenics. """
         self.u_bc_object_list, self.eta_bc_object_list, self.uTimeDependent, self.etaTimeDependent, \
             self.u_list_expression, self.eta_list_expression = make_boundary_object_list(
                 self.inputs.boundary_u, self.inputs.boundary_eta, self.basis_str, self.inputs.bc_file, self.mesh,
                 self.inputs.domain, self.W, self.P, self.t, self.inputs.tidal_amplitude, self.inputs.tidal_period)
 
     def make_wind(self):
+        """ build up 10 meter wind velocity object. """
         code = '''
 
             namespace dolfin {
@@ -259,6 +352,7 @@ class ModelInitiate:
         self.wind = MakeWind(self.inputs)
 
     def make_stochastic_parameter(self):
+        """ build up entire stochastic modes for uncertain inputs. """
         nu_expression_list, bottom_drag_expression_list, wind_drag_expression_list = make_sto_modes(
             self.basis_str, self.inputs.sto_viscosity, self.inputs.sto_bottomDrag, self.inputs.sto_windDrag)
 

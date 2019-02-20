@@ -7,7 +7,7 @@ def model_initiate_driver(inputs):
 
     initiate = ModelInitiate(inputs)
 
-    initiate.make_stochastic_basic()
+    initiate.make_stochastic_basis()
 
     initiate.make_mesh()
 

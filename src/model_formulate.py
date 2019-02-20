@@ -4,6 +4,54 @@ from fenics import inner, grad, DOLFIN_EPS, dx, CellSize, div, dot
 
 
 class DetModelFormulate:
+    """
+    Deterministic shallow water equation weak form formulation.
+
+    Parameters:
+    -----------
+    inputs : object
+        object of class ModelReadInput from model_read_input.py.
+
+    initiate : object
+        object of class ModelInitiate from model_initiate.py.
+
+    u_mean : function object
+
+    u_bash : function object
+
+    u_diff : function object
+
+    u0_norm : function object
+        vector norm of u0 at the nth time step.
+
+    eta_diff : function object
+
+    ut_mean : function object
+
+    eta1_diff : function object
+
+    norm_wind : function object
+        vector norm of wind velocity
+
+    F_u_tent : form object
+        weak form for solving tentative velocity
+
+    F_p_corr : form object
+        weak form for solving pressure
+
+    F_u_corr : form object
+        weak form for solving the (n+1)th water velocity
+
+    h : object
+        class object to give each element size
+
+    tau1 : object
+        standard SUPG stabilized parameter
+
+    tau2 : object
+        cross wind diffusivity stabilized parameter
+
+    """
 
     def __init__(self, inputs, initiate):
 
@@ -47,21 +95,21 @@ class DetModelFormulate:
                           inner(self.initiate.v, grad(self.eta1_diff)) * dx)
 
     def add_convection(self):
-
+        """ add convective term to tentative water velocity F_u_tent weak form. """
         self.F_u_tent += inner(self.initiate.v, grad(self.u_mean) * self.u_bash) * dx
 
     def add_viscosity(self):
-
+        """ add viscosity term to tentative water velocity F_u_tent weak form. """
         self.F_u_tent += self.initiate.nu_expression_object_list[0] * \
                          inner(grad(self.initiate.v), grad(self.u_mean)) * dx
 
     def add_bottom_stress(self):
-
+        """ add bottom friction source term to tentative water velocity F_u_tent weak form. """
         self.F_u_tent += self.u0_norm / self.initiate.H * self.initiate.bottomDrag_expression_object_list[0] * \
                          inner(self.u_mean, self.initiate.v) * dx
 
     def add_wind_stress(self):
-
+        """ add wind stress source term to tentative water velocity F_u_tent weak form. """
         self.F_u_tent -= (self.initiate.v[0] * self.inputs.rho_air / self.inputs.rho_water *
                           self.norm_wind * self.initiate.wind_para_x / self.initiate.H *
                           self.initiate.windDrag_expression_object_list[0] * (0.75 + 0.067 * self.norm_wind)) * dx
@@ -70,11 +118,11 @@ class DetModelFormulate:
                           self.initiate.windDrag_expression_object_list[0] * (0.75 + 0.067 * self.norm_wind)) * dx
 
     def add_atmospheric_pressure(self):
-
+        """ add atmospheric pressure source term to tentative water velocity F_u_tent weak form. """
         self.F_u_tent += inner(self.initiate.v, grad(self.initiate.pressure / self.inputs.rho_water)) * dx
 
     def add_su_pg(self):
-
+        """ add standard stabilized term to tentative water velocity F_u_tent weak form. """
         r = inner((1 / self.initiate.dt) * self.u_diff + self.initiate.g * grad(self.initiate.eta0),
                   self.tau1 * grad(self.initiate.v) * self.u_bash) * dx
 
@@ -104,7 +152,7 @@ class DetModelFormulate:
         self.F_u_tent += r
 
     def add_crosswind(self):
-
+        """ add cross wind diffusion term to tentative water velocity F_u_tent weak form. """
         u0_mean = self.initiate.theta * self.initiate.u0 + (1. - self.initiate.theta) * self.initiate.u00
         du_norm = inner(grad(self.initiate.u0[0]), grad(self.initiate.u0[0])) ** 0.5
         dv_norm = inner(grad(self.initiate.u0[1]), grad(self.initiate.u0[1])) ** 0.5
@@ -153,6 +201,54 @@ class DetModelFormulate:
 
 
 class StoModelFormulate:
+    """
+    Stochastic shallow water equation weak form formulation.
+
+    Parameters:
+    -----------
+    inputs : object
+        object of class ModelReadInput from model_read_input.py.
+
+    initiate : object
+        object of class ModelInitiate from model_initiate.py.
+
+    u_mean : function object
+
+    u_bash : function object
+
+    u_diff : function object
+
+    u0_norm : function object
+        vector norm of u0 at the nth time step.
+
+    eta_diff : function object
+
+    ut_mean : function object
+
+    eta1_diff : function object
+
+    norm_wind : function object
+        vector norm of wind velocity
+
+    F_u_tent : form object
+        weak form for solving tentative velocity
+
+    F_p_corr : form object
+        weak form for solving pressure
+
+    F_u_corr : form object
+        weak form for solving the (n+1)th water velocity
+
+    h : object
+        class object to give each element size
+
+    tau1 : object
+        standard SUPG stabilized parameter
+
+    tau2 : object
+        cross wind diffusivity stabilized parameter
+
+    """
 
     def __init__(self, inputs, initiate):
 
@@ -204,6 +300,7 @@ class StoModelFormulate:
                                          grad(self.initiate.q[k])[1] * self.ut_mean[2 * j + 1] * dx
 
     def add_convection(self):
+        """ add convection term to tentative water velocity F_u_tent weak form. """
         for k in range(self.initiate.n_modes):
             for j in range(self.initiate.n_modes):
                 for i in range(self.initiate.n_modes):
@@ -216,6 +313,7 @@ class StoModelFormulate:
                             self.u_bash[2 * i + 1] * grad(self.u_mean[2 * j + 1])[1]) * dx
 
     def add_viscosity(self):
+        """ add viscosity term to tentative water velocity F_u_tent weak form. """
         for k in range(self.initiate.n_modes):
             for j in range(self.initiate.n_modes):
                 for i in range(self.initiate.n_modes):
@@ -226,6 +324,7 @@ class StoModelFormulate:
                                           inner(grad(self.initiate.v[2 * k + 1]), grad(self.u_mean[2 * j + 1])) * dx)
 
     def add_bottom_stress(self):
+        """ add bottom friction source term to tentative water velocity F_u_tent weak form. """
         for k in range(self.initiate.n_modes):
             for j in range(self.initiate.n_modes):
                 for i in range(self.initiate.n_modes):
@@ -240,6 +339,7 @@ class StoModelFormulate:
                                           inner(self.u_mean[2 * j + 1], self.initiate.v[2 * k + 1]) * dx)
 
     def add_wind_stress(self):
+        """ add wind stress source term to tentative water velocity F_u_tent weak form. """
         norm_wind = (self.initiate.wind_para_x ** 2 + self.initiate.wind_para_y ** 2) ** 0.5
         for k in range(self.initiate.n_modes):
             self.F_u_tent -= (self.initiate.v[2 * k] * self.initiate.rho_air / self.initiate.rho_water * norm_wind *
@@ -250,6 +350,7 @@ class StoModelFormulate:
                               self.initiate.windDrag_expression_object_list[k] * (0.75 + 0.067 * self.norm_wind)) * dx
 
     def add_atmospheric_pressure(self):
+        """ add atmospheric pressure source term to tentative water velocity F_u_tent weak form. """
         for k in range(self.initiate.n_modes):
             self.F_u_tent += inner(self.initiate.v[2 * k],
                                    grad(self.initiate.pressure / self.inputs.rho_water)[0]) * dx + \
@@ -257,7 +358,9 @@ class StoModelFormulate:
                                    grad(self.initiate.pressure / self.inputs.rho_water)[1]) * dx
 
     def add_su_pg(self):
+        # TODO : add stochastic version SUPG
         pass
 
     def add_crosswind(self):
+        # TODO: add stochastic version crosswind diffusion
         pass

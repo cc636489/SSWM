@@ -5,6 +5,57 @@ import numpy as np
 
 
 class ModelRun:
+    """
+    class to solve the formulated weak form at each time step.
+
+    Parameters:
+    ----------
+    inputs : object
+        object of class ModelReadInput from model_read_input.py.
+
+    initiate : object
+        object of class ModelInitiate from model_initiate.py.
+
+    formulate : object
+        object of class (Det)(Sto)ModelFormulate from model_formulate.py.
+
+    a_u_tent : object
+        left hand side of F_u_tent
+
+    L_u_tent : object
+        right hand side of F_u_tent
+
+    a_p_corr : object
+        left hand side of F_p_corr
+
+    L_p_corr : object
+        right hand side of F_p_corr
+
+    a_u_corr : object
+        left hand side of F_u_corr
+
+    L_u_corr : object
+        right hand side of F_u_corr
+
+    test_nodes : nested list
+        test node x-y coordinates constructing in a list
+
+    bin_random_u1: ndarray
+        array to save u-water velocity at each stochastic samples at each time step at a prescribed phycial point.
+
+    bin_random_v1: ndarray
+        array to save v-water velocity at each stochastic samples at each time step at a prescribed phycial point.
+
+    bin_random_eta1: ndarray
+        array to save surface elevation at each stochastic samples at each time step at a prescribed phycial point.
+
+    total_mass : list
+        array to save total volume mass of the entire domain at each time step.
+
+    time_stamp : list
+        array to save time stamp at each time step.
+
+    """
 
     def __init__(self, inputs, initiate, formulate):
 
@@ -42,7 +93,7 @@ class ModelRun:
         self.time_step_count = 0
 
     def run_prep(self):
-
+        """ prepare left and right hand side weak form and do necessary assembling before simulation run. """
         self.a_u_tent = lhs(self.formulate.F_u_tent)
         self.L_u_tent = rhs(self.formulate.F_u_tent)
         self.a_p_corr = lhs(self.formulate.F_p_corr)
@@ -74,7 +125,7 @@ class ModelRun:
         self._run_initialize_bins()
 
     def running(self):
-
+        """ iterate each time step to solve formulated weak forms. """
         while float(self.initiate.t - self.initiate.finish_time) < -1e-3:
 
             self._update_time()
@@ -108,12 +159,12 @@ class ModelRun:
             self._run_write_bins()
 
     def run_final(self):
-
+        """ save results to files. """
         self._run_save_bin()
         print "total time_step is ", self.time_step_count
 
     def _run_create_file(self):
-
+        """ open files to write results. """
         for mode in range(self.initiate.n_modes):
             if self.inputs.USE_pvd:
                 self.u_file.append(File(self.inputs.output_dir + "u_" + self.inputs.output_str +
@@ -135,7 +186,7 @@ class ModelRun:
                                                          self.inputs.output_str + "0.xdmf"))
 
     def _run_write_file(self):
-
+        """ write to files. """
         if self.initiate.n_modes == 1:
             if self.inputs.USE_pvd:
                 self.u_file[0] << (self.initiate.u1, float(self.initiate.t))
@@ -163,8 +214,10 @@ class ModelRun:
             else:
                 self.wind_xy_output_file[0].write(self.initiate.wind_vector, float(self.initiate.t))
 
-    def _run_initialize_bins(self):
+        # TODO : add .xml output format in order to be read in again by FeniCs.
 
+    def _run_initialize_bins(self):
+        """ initialize arrays to save stochastic results. """
         self.test_nodes = [[a, b] for a in self.inputs.test_node_x for b in self.inputs.test_node_y]
         self.sample_x = np.linspace(self.inputs.coefficient[0], self.inputs.coefficient[1], self.inputs.n_sample)
         self.sample_y = np.linspace(self.inputs.coefficient[2], self.inputs.coefficient[3], self.inputs.n_sample)
@@ -179,7 +232,7 @@ class ModelRun:
         self.time_stamp.append(float(self.initiate.t))
 
     def _run_write_bins(self):
-
+        """ write to array of stochastic results. """
         for j in range(self.inputs.n_sample):
             for k in range(self.inputs.n_sample):
                 ort_list = [self.initiate.ort_pol[mode](self.sample_x[j], self.sample_x[k])
@@ -198,7 +251,7 @@ class ModelRun:
         self.time_stamp.append(float(self.initiate.t))
 
     def _run_save_bin(self):
-
+        """ save to file of the arrays. """
         np.save(self.inputs.output_dir + "bin_random_eta1_all_points_order_" + str(self.inputs.sto_poly_deg),
                 self.bin_random_eta1)
         np.save(self.inputs.output_dir + "bin_random_u1_all_points_order_" + str(self.inputs.sto_poly_deg),
@@ -209,19 +262,19 @@ class ModelRun:
         np.save(self.inputs.output_dir + "time_stamp_at_every_time_step", self.time_stamp)
 
     def _update_time(self):
-
+        """ update current time. """
         self.initiate.t = Constant(self.initiate.t + self.initiate.dt)
         self.time_step_count += 1
 
     def _update_boundary(self):
-
+        """ update boundary condition if it's time dependent. """
         if self.initiate.uTimeDependent:
             self.initiate.u_list_expression.t = self.initiate.t
         if self.initiate.etaTimeDependent:
             self.initiate.eta_list_expression.t = self.initiate.t
 
     def _update_wind(self):
-
+        """ update wind field if it's time dependent. """
         self.initiate.wind.get_prepared(current_time=float(self.initiate.t))
         wind_para_x_list = []
         wind_para_y_list = []
@@ -238,7 +291,7 @@ class ModelRun:
             self.initiate.pressure.update(self.initiate.x_coord[sm], self.initiate.y_coord[sm], pressure_list[sm])
 
     def _update_les(self):
-
+        """ update eddy viscosity field. """
         if self.initiate.n_modes == 1:
             self.initiate.les[0].u = self.initiate.u0
             self.initiate.les[0].solve()
@@ -248,7 +301,7 @@ class ModelRun:
                 self.initiate.les[k].solve()
 
     def _update_u_tent(self):
-
+        """ update form for tentative velcoity. """
         aa_u_tent = assemble(self.a_u_tent)
         b = assemble(self.L_u_tent)
         for bc in self.initiate.u_bc_object_list:
@@ -256,7 +309,7 @@ class ModelRun:
         solve(aa_u_tent, self.initiate.ut.vector(), b)
 
     def _update_eta_corr(self):
-
+        """ update form for the (n+1)th time step pressure. """
         b = assemble(self.L_p_corr)
         for bc in self.initiate.eta_bc_object_list:
             bc.apply(b)
@@ -269,7 +322,7 @@ class ModelRun:
             solve(aa_p_corr, self.initiate.eta1.vector(), b)
 
     def _update_u_corr(self):
-
+        """ update form for the (n+1)th time step velocity. """
         b = assemble(self.L_u_corr)
         for bc in self.initiate.u_bc_object_list:
             bc.apply(b)

@@ -174,7 +174,7 @@ if include_viscosity:
     F_u_tent += nu * inner(grad(v), grad(u_mean)) * dx
 
 if include_advection:
-    F_u_tent += inner(v, grad(u_mean)*u_bash) * dx ## FIXME!! need concern about the actual splitting form. should be grad(u_mean)*u_bash.
+    F_u_tent += inner(v, grad(u_mean)*u_bash) * dx
 a_u_tent = lhs(F_u_tent)
 L_u_tent = rhs(F_u_tent)
 

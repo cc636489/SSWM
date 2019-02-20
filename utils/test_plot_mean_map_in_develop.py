@@ -5,8 +5,6 @@ from makemesh import MakeMesh
 from fenics import *
 from dolfin import *
 
-# TODO: XDMFFile read back in not ready yet. Allanswered.com. check bac read_checkpoint().
-# TODO: need to retake the file I/O part, write it in a compatible way.
 
 
 loc = '/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/'
