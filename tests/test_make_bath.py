@@ -1,9 +1,9 @@
 
 
 import unittest
-from src.make_mesh import make_mesh
-from src.make_bath import make_bath
-from src.make_sto_basis import make_sto_basis
+from make_mesh import make_mesh
+from make_bath import make_bath
+from make_sto_basis import make_sto_basis
 from fenics import FiniteElement, FunctionSpace, MixedElement
 
 
@@ -48,3 +48,7 @@ class MakeStoTestCase(unittest.TestCase):
         bath = {"class": ['type3', "../input/inlet_adh_sswm_finer.nc"]}
         tmp = make_bath(bath, self.basis_str, self.p)
         self.assertIsInstance(tmp, object, "spacial-varied type3 bathymetry generation error")
+
+
+if __name__ == '__main__':
+    unittest.main()

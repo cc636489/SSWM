@@ -64,3 +64,7 @@ class MakeStoTestCase(unittest.TestCase):
                                                                   self.basis_str, self.w, self.p, False)
         self.assertIsInstance(u_ic_function, object)
         self.assertIsInstance(eta_ic_function, object)
+
+
+if __name__ == '__main__':
+    unittest.main()

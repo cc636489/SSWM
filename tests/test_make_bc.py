@@ -70,3 +70,7 @@ class MakeStoTestCase(unittest.TestCase):
         self.assertIsInstance(eta_list_expression, object)
         self.assertFalse(u_time_dependent)
         self.assertTrue(eta_time_dependent)
+
+
+if __name__ == '__main__':
+    unittest.main()
