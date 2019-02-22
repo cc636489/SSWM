@@ -5,14 +5,14 @@
 The model has adopted stochastic finite element method (SFEM), incorporating Streamlined Upwind Petrov Galerkin (SUPG) term
 and crosswind diffusion term for stabilization purpose.
 
-SFEM, in general, is a combination of the following two methods:
+**SFEM**, in general, is a combination of the following two methods:
 -   spectrum method in random space
 -   Continuous Galerkin(CG) finite element method in physical space.
 
-SUPG is added to the model in order to stabilize convection-dominated flow in shallow water problems.
+**SUPG** is added to the model in order to stabilize convection-dominated flow in shallow water problems.
 -   It's equivalent to add diffusion in the streamlined direction.
 
-Crosswind diffusion term is added to the model in order to stabilize spurious oscillation due to large gradients and sharp fronts.
+**Crosswind diffusion** term is added to the model in order to stabilize spurious oscillation due to large gradients and sharp fronts.
 -   It's equivalent to add diffusion in the large gradient direction.
 
 **When** to use it:
@@ -23,8 +23,6 @@ time-varying boundary conditions, wind drag coefficient and bottom friction coef
 -   want to know the probability density function of surface elevation(or water velocity) at one node due to uncertain model inputs.
 -   want to know the auto-correlation(or cross-correlation) of the time series of surface elevation at any two nodes.
 -   want to obtain a highly-accurate surrogate surface at any nodes.
-
-**How** to use it:
 
 Dependencies:
 -------------
