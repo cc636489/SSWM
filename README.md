@@ -75,4 +75,4 @@ Model Verification:
 Verification of the program is conducted by comparing to a well-known shallow water model ADCIRC. The following is the
 comparison of surface elevation between ADCIRC and SSWM(i.e. **mean surface elevation** with stochastic order setting to zero)
 
-![](https://github.com/cc636489/research/tree/master/doc/IKE_comparison_u_eta_with_atmos_pre_faster_animation.gif)
+![Alter Text](https://github.com/cc636489/research/tree/master/doc/IKE_comparison_u_eta_with_atmos_pre_faster_animation.gif)
