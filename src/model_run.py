@@ -203,7 +203,7 @@ class ModelRun:
                     self.u_file[mode] << (tmp1[mode], float(self.initiate.t))
                     self.eta_file[mode] << (tmp2[mode], float(self.initiate.t))
                 else:
-                    self.u_file[mode].write(tmp1, float(self.initiate.t))
+                    self.u_file[mode].write(tmp1[mode], float(self.initiate.t))
                     self.eta_file[mode].write(tmp2[mode], float(self.initiate.t))
 
         if self.inputs.include_wind_stress:

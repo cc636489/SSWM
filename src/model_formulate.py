@@ -68,7 +68,8 @@ class DetModelFormulate:
 
         self.eta1_diff = self.initiate.eta1 - self.initiate.eta0
 
-        self.norm_wind = (self.initiate.wind_para_x ** 2 + self.initiate.wind_para_y ** 2) ** 0.5
+        if self.inputs.include_wind_stress:
+            self.norm_wind = (self.initiate.wind_para_x ** 2 + self.initiate.wind_para_y ** 2) ** 0.5
 
         self.F_u_tent = 0
         self.F_p_corr = 0
@@ -265,7 +266,8 @@ class StoModelFormulate:
 
         self.eta1_diff = self.initiate.eta1 - self.initiate.eta0
 
-        self.norm_wind = (self.initiate.wind_para_x ** 2 + self.initiate.wind_para_y ** 2) ** 0.5
+        if self.inputs.include_wind_stress:
+            self.norm_wind = (self.initiate.wind_para_x ** 2 + self.initiate.wind_para_y ** 2) ** 0.5
 
         self.F_u_tent = 0
         self.F_p_corr = 0
