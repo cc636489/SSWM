@@ -2,7 +2,7 @@
 
 from chaospy import poly
 import sympy as sp
-from numpy import pi
+import numpy as np
 
 
 def make_sto_modes(pc_basis_str, *args):
