@@ -33,7 +33,7 @@ def make_boundary_object_list(boundary_u_dict, boundary_eta_dict, pc_basis_str, 
     elif bc_file_name is None:
         boundaries = FacetFunction("size_t", mesh)
 
-        # this 4 class only used for strong imposed non-penetration bc.
+        # this 4 class only used for strong imposed non-penetration bc.==> maybe not
         class Left(SubDomain):
             def inside(self, x, on_boundary):
                 return on_boundary and near(x[0], domain.get("rectangle")[0])

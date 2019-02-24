@@ -10,6 +10,8 @@ import sys
 sys.path.insert(0, '/workspace/Documentation/Research_Doc/SFEM_Doc/7-NS-github/input')
 sys.setrecursionlimit(10000)
 
+# TODO: design a User Interface for 2D-SSWM based on this input file.
+
 
 def main():
 

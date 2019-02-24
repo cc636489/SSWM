@@ -46,6 +46,7 @@ include_crosswind = True
 les_parameters = {'smagorinsky_coefficient': 0.3}
 DEBUG_mode = False
 USE_pvd = False
+USE_iterative = True
 
 # time parameter setting
 tidal_amplitude = 0.75

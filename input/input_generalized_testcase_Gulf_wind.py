@@ -47,6 +47,7 @@ include_crosswind = True
 les_parameters = {'smagorinsky_coefficient': 0.17}
 DEBUG_mode = False
 USE_pvd = False
+USE_iterative = False
 
 
 # time parameter setting

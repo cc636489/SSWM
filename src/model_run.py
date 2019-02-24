@@ -306,7 +306,10 @@ class ModelRun:
         b = assemble(self.L_u_tent)
         for bc in self.initiate.u_bc_object_list:
             bc.apply(aa_u_tent, b)
-        solve(aa_u_tent, self.initiate.ut.vector(), b)
+        if self.inputs.USE_iterative:
+            solve(aa_u_tent, self.initiate.ut.vector(), b, "gmres", "default")
+        else:
+            solve(aa_u_tent, self.initiate.ut.vector(), b)
 
     def _update_eta_corr(self):
         """ update form for the (n+1)th time step pressure. """

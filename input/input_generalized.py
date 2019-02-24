@@ -24,9 +24,9 @@ coefficient = [0.8, 1.2, 0.9, 1.1]  # lower1/upper1--lower2/upper2--...
 
 # horizontal domain setting
 # first way: simple domain built in
-# domain = {"rectangle": (0., 0., 1000., 200., 100, 20)}
+domain = {"rectangle": (0., 0., 1000., 200., 100, 20)}
 # second way: complex domain import: domain = {"importfile": "inlet.xml"}
-domain = {"importfile": input_dir + mesh_file}
+# domain = {"importfile": input_dir + mesh_file}
 
 # stochastic coefficient # if contains sin(), cos(), should use sympy sin and sympy cos!!!!!!!!!!
 sto_viscosity = "0.0"
@@ -43,9 +43,10 @@ include_bottom_stress = False
 include_atmospheric_pressure = False
 include_supg = False
 include_crosswind = False
-les_parameters = {'smagorinsky_coefficient': 0.13}
+les_parameters = {'smagorinsky_coefficient': 0.17}
 DEBUG_mode = False
 USE_pvd = False
+USE_iterative = False
 
 # time parameter setting
 tidal_amplitude = 0.75
@@ -72,8 +73,8 @@ one2ten = 0.8928
 # bathymetry setting
 #bathymetry = {"flat": 20.}
 #bathymetry = {"vary": "2*x+3*y"}
-bathymetry = {"class": ['type1', 400, 600, '-3.0*q0 + 6.0 * q1 + 2.0',
-                        '-3.0 * ((x-500.0)/100.0)**4 + 6.0 * ((x-500.0)/100.0)**2 + 2.0']}
+bathymetry = {"class": ['type1', 400, 600, '-3.0 * q0 + 6.0 * q1 + 2.0',
+                        '-3.0 * q0* ((x-500.0)/100.0)**4 + 6.0 * q1 * ((x-500.0)/100.0)**2 + 2.0']}
 # bathymetry = {"class": ['type2', 2150, '-14.0/2150.0*x + 19.0', '5.0']}
 # bathymetry = {"class": ['type3', input_dir+bath_file]}
 
@@ -86,10 +87,12 @@ initial_eta = {"flat": 0.0}
 
 # boundary condition
 # first way:
-bc_file = input_dir + boundary_file
-# boundary_u = {1: "free_slip_in_y", 3: "free_slip_in_x", 4: "free_slip_in_x"}
-boundary_u = {}
-boundary_eta = {3: "0.1 * sp.sin(pi/20.0 * t)"}
+# bc_file = input_dir + boundary_file
+bc_file = None
+boundary_u = {1: "free_slip_in_y", 3: "free_slip_in_x", 4: "free_slip_in_x"}
+# boundary_u = {}
+# boundary_eta = {3: "0.1 * sp.sin(pi/20.0 * t)"}
+boundary_eta = {2: "0.1 * sp.sin(pi/20.0 * t)"}
 # second way:
 # bc_file = None
 # boundary_u = {1: "free_slip_in_y", 2: "free_slip_in_y", 3: "free_slip_in_x", 4: "free_slip_in_x"}
