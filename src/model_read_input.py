@@ -117,6 +117,7 @@ class ModelReadInput:
         self.les_parameters = les_parameters
         self.DEBUG_mode = DEBUG_mode  # not fully implemented yet
         self.USE_pvd = USE_pvd
+        self.USE_HDF5 = USE_HDF5
         self.USE_iterative = USE_iterative
 
         self.tidal_amplitude = tidal_amplitude

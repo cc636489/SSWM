@@ -1,7 +1,10 @@
 
 
-from fenics import lhs, rhs, assemble, LUSolver, KrylovSolver, File, XDMFFile, dx, solve, Constant, project, as_vector
+from fenics import lhs, rhs, assemble, LUSolver, KrylovSolver, File, \
+                   XDMFFile, dx, solve, Constant, project, as_vector
+# from dolfin import *
 import numpy as np
+from fenics import HDF5File
 
 
 class ModelRun:
@@ -79,6 +82,9 @@ class ModelRun:
         self.u_file = []
         self.eta_file = []
         self.wind_xy_output_file = []
+        self.u_used_for_read_back = []
+        self.eta_used_for_read_back = []
+        self.wind_xy_used_for_read_back = []
 
         self.test_nodes = None
         self.sample_x = None
@@ -177,6 +183,14 @@ class ModelRun:
                 self.eta_file.append(XDMFFile(self.inputs.output_dir + "eta_" + self.inputs.output_str +
                                               "{:02d}".format(mode) + ".xdmf"))
 
+            if self.inputs.USE_HDF5:
+                self.u_used_for_read_back.append(HDF5File(self.initiate.mesh.mpi_comm(), self.inputs.output_dir +
+                                                          "u_used_for_read_back_" + self.inputs.output_str +
+                                                          "{:02d}".format(mode) + ".h5", "w"))
+                self.eta_used_for_read_back.append(HDF5File(self.initiate.mesh.mpi_comm(), self.inputs.output_dir +
+                                                            "eta_used_for_read_back_" + self.inputs.output_str +
+                                                            "{:02d}".format(mode) + ".h5", "w"))
+
         if self.inputs.include_wind_stress:
             if self.inputs.USE_pvd:
                 self.wind_xy_output_file.append(File(self.inputs.output_dir + "wind_vel_" +
@@ -184,6 +198,10 @@ class ModelRun:
             else:
                 self.wind_xy_output_file.append(XDMFFile(self.inputs.output_dir + "wind_vel_" +
                                                          self.inputs.output_str + "0.xdmf"))
+            if self.inputs.USE_HDF5:
+                self.wind_xy_used_for_read_back.append(HDF5File(self.initiate.mesh.mpi_comm(), self.inputs.output_dir +
+                                                         "wind_used_for_read_back_" + self.inputs.output_str +
+                                                         "0.h5", "w"))
 
     def _run_write_file(self):
         """ write to files. """
@@ -194,7 +212,9 @@ class ModelRun:
             else:
                 self.u_file[0].write(self.initiate.u1, float(self.initiate.t))
                 self.eta_file[0].write(self.initiate.eta1, float(self.initiate.t))
-
+            if self.inputs.USE_HDF5:
+                self.u_used_for_read_back[0].write(self.initiate.u1, "WaterVelocity", float(self.initiate.t))
+                self.eta_used_for_read_back[0].write(self.initiate.eta1, "SurfaceElevation", float(self.initiate.t))
         else:
             for mode in range(self.initiate.n_modes):
                 tmp1 = self.initiate.u1.split(deepcopy=True)
@@ -205,6 +225,9 @@ class ModelRun:
                 else:
                     self.u_file[mode].write(tmp1[mode], float(self.initiate.t))
                     self.eta_file[mode].write(tmp2[mode], float(self.initiate.t))
+                if self.inputs.USE_HDF5:
+                    self.u_used_for_read_back[mode].write(tmp1[mode], "WaterVelocity", float(self.initiate.t))
+                    self.eta_used_for_read_back[mode].write(tmp2[mode], "SurfaceElevation", float(self.initiate.t))
 
         if self.inputs.include_wind_stress:
             self.initiate.wind_vector.assign(project(as_vector([self.initiate.wind_para_x, self.initiate.wind_para_y]),
@@ -213,6 +236,8 @@ class ModelRun:
                 self.wind_xy_output_file[0] << (self.initiate.wind_vector, float(self.initiate.t))
             else:
                 self.wind_xy_output_file[0].write(self.initiate.wind_vector, float(self.initiate.t))
+            if self.inputs.USE_HDF5:
+                self.wind_xy_used_for_read_back[0].write(self.initiate.wind_vector, "WindSpeed", float(self.initiate.t))
 
         # TODO : add .xml output format in order to be read in again by FeniCs.
 

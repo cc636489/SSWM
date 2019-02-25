@@ -17,10 +17,10 @@ test_node_y = [0.]
 
 # stochastic basis
 dist_name = "uniform"  # "uniform"  or "gaussian"   ==> only enable "uniform" mode at present.
-sto_poly_deg = 0  # polynomial chaos order is 2.
+sto_poly_deg = 2  # polynomial chaos order is 2.
 # the dimension and coefficient should be paired and dim!=0  and coefficient!=Null
 sto_poly_dim = 2  # use "q0","q1","q2", ....
-coefficient = [1, 2, 1, 2]  # lower1/upper1--lower2/upper2--...
+coefficient = [0.8, 1.2, 0.9, 1.1]  # lower1/upper1--lower2/upper2--...
 
 # horizontal domain setting
 # first way: simple domain built in
@@ -31,7 +31,7 @@ domain = {"importfile": input_dir+mesh_file}
 # stochastic coefficient # if contains sin(), cos(), should use sympy sin and sympy cos!!!!!!!!!!
 sto_viscosity = "1e-6"
 sto_bottomDrag = "0.0015"
-sto_windDrag = "0.0"
+sto_windDrag = "0.0002*q0*q1"
 
 # terms control
 include_viscosity = True
@@ -45,8 +45,9 @@ include_supg = True
 include_crosswind = True
 les_parameters = {'smagorinsky_coefficient': 0.3}
 DEBUG_mode = False
-USE_pvd = False
-USE_iterative = True
+USE_pvd = True
+USE_HDF5 = True
+USE_iterative = False
 
 # time parameter setting
 tidal_amplitude = 0.75
