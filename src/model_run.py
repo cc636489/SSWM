@@ -239,8 +239,6 @@ class ModelRun:
             if self.inputs.USE_HDF5:
                 self.wind_xy_used_for_read_back[0].write(self.initiate.wind_vector, "WindSpeed", float(self.initiate.t))
 
-        # TODO : add .xml output format in order to be read in again by FeniCs.
-
     def _run_initialize_bins(self):
         """ initialize arrays to save stochastic results. """
         self.test_nodes = [[a, b] for a in self.inputs.test_node_x for b in self.inputs.test_node_y]
