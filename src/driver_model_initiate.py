@@ -21,8 +21,12 @@ def model_initiate_driver(inputs):
 
     initiate.make_bc()
 
-    if inputs.include_wind_stress and inputs.include_atmospheric_pressure:
+    if inputs.include_wind_stress or inputs.include_atmospheric_pressure:
+        # make_wind includes wind_x, wind_y, pressure
         initiate.make_wind()
+
+    if inputs.include_const_wind:
+        initiate.make_const_wind()
 
     initiate.make_stochastic_parameter()
 

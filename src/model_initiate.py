@@ -351,6 +351,10 @@ class ModelInitiate:
         # self.wind = MakeWind(self.inputs.input_dir + self.inputs.wind_file, self.inputs.wind_dt)
         self.wind = MakeWind(self.inputs)
 
+    def make_const_wind(self):
+        self.wind_para_x = Constant(self.inputs.wind_x)
+        self.wind_para_y = Constant(self.inputs.wind_y)
+
     def make_stochastic_parameter(self):
         """ build up entire stochastic modes for uncertain inputs. """
         nu_expression_list, bottom_drag_expression_list, wind_drag_expression_list = make_sto_modes(

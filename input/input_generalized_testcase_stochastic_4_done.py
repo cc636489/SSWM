@@ -20,7 +20,7 @@ dist_name = "uniform"  # "uniform"  or "gaussian"   ==> only enable "uniform" mo
 sto_poly_deg = 2  # polynomial chaos order is 2.
 # the dimension and coefficient should be paired and dim!=0  and coefficient!=Null
 sto_poly_dim = 2  # use "q0","q1","q2", ....
-coefficient = [0.8, 1.2, 0.9, 1.1]  # lower1/upper1--lower2/upper2--...
+coefficient = [0.9, 1.0, 0.9, 1.0]  # lower1/upper1--lower2/upper2--...
 
 # horizontal domain setting
 # first way: simple domain built in
@@ -31,7 +31,7 @@ domain = {"importfile": input_dir+mesh_file}
 # stochastic coefficient # if contains sin(), cos(), should use sympy sin and sympy cos!!!!!!!!!!
 sto_viscosity = "1e-6"
 sto_bottomDrag = "0.0015"
-sto_windDrag = "0.001"
+sto_windDrag = "0.001*q0*q1"
 
 # terms control
 include_viscosity = True
@@ -39,6 +39,9 @@ include_convection = True
 linear_divergence = False
 include_les = True
 include_wind_stress = False
+include_const_wind = True
+wind_x = 1.0
+wind_y = 0.0
 include_bottom_stress = True
 include_atmospheric_pressure = False
 include_supg = True
@@ -50,7 +53,7 @@ USE_HDF5 = True
 USE_iterative = False
 
 # time parameter setting
-tidal_amplitude = "0.75*q0*q1"
+tidal_amplitude = 0.75
 tidal_period = 12.41666*60*60
 start_time = 0.0
 end_time = 223500

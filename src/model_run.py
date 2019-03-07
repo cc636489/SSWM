@@ -143,6 +143,9 @@ class ModelRun:
                 print "Compute wind stress."
                 self._update_wind()
 
+            if self.inputs.include_const_wind or self.inputs.include_atmospheric_pressure:
+                pass
+
             if self.inputs.include_les:
                 print "Compute eddy viscosity."
                 self._update_les()

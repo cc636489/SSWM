@@ -291,7 +291,7 @@ class StoModelFormulate:
         self.h = CellSize(self.initiate.mesh)
         # self.tau1 = 0.5*h*pow(4.0*nu/h+2.0*u_norm, -1.0)
         # self.tau1 = pow( (1./0.5/dt)**2 + (2.*u_norm/h)**2 + 9.0*(4.*nu/h/h)**2, -1.0/2)
-        # TODO: may consider modify tau2 into max(tau2-tau1, 0)
+        # TODO: may consider modify tau2 into max(tau2-tau1, 0), now larger consistent viscosity is fine.
         self.tau1 = pow(1 / 0.5 / self.initiate.dt + 2. * self.u0_norm / self.h +
                         4. * self.initiate.nu_expression_object_list[0] / self.h / self.h, -1.0)
         self.tau2 = self.tau1
@@ -347,12 +347,12 @@ class StoModelFormulate:
                                          (self.initiate.stoIJK[i][j][k] * self.initiate.nu_expression_object_list[i] *
                                           inner(grad(self.initiate.v[2 * k + 1]), grad(self.u_mean[2 * j + 1])) * dx)
                         # TODO: try to use various stabilized terms.
-                        self.F_u_tent += (3000. / self.h * self.initiate.stoIJK[i][j][k] *
-                                          self.initiate.nu_expression_object_list[i] *
-                                          inner(grad(self.initiate.v[2 * k]), grad(self.u_mean[2 * j])) * dx) + \
-                                         (3000. / self.h * self.initiate.stoIJK[i][j][k] *
-                                          self.initiate.nu_expression_object_list[i] *
-                                          inner(grad(self.initiate.v[2 * k + 1]), grad(self.u_mean[2 * j + 1])) * dx)
+                        # self.F_u_tent += (self.h * self.initiate.stoIJK[i][j][k] *
+                        #                   self.initiate.nu_expression_object_list[i] *
+                        #                   inner(grad(self.initiate.v[2 * k]), grad(self.u_mean[2 * j])) * dx) + \
+                        #                  (self.h * self.initiate.stoIJK[i][j][k] *
+                        #                   self.initiate.nu_expression_object_list[i] *
+                        #                   inner(grad(self.initiate.v[2 * k + 1]), grad(self.u_mean[2 * j + 1])) * dx)
 
     def add_bottom_stress(self):
         """ add bottom friction source term to tentative water velocity F_u_tent weak form. """
@@ -461,7 +461,7 @@ class StoModelFormulate:
                                   ) * dx
 
                         # add SUPG wind forcing term.
-                        if self.inputs.include_wind_stress:
+                        if self.inputs.include_wind_stress or self.inputs.include_const_wind:
                             r -= (self.initiate.stoIJK[i][j][k] * self.tau1 * self.inputs.rho_air /
                                   self.inputs.rho_water * self.norm_wind / self.initiate.H[0] *
                                   self.initiate.windDrag_expression_object_list[k] * (0.75 + 0.067 * self.norm_wind) *
@@ -557,7 +557,7 @@ class StoModelFormulate:
                                    ) * dx
 
                         # add crosswind wind forcing term.
-                        if self.inputs.include_wind_stress:
+                        if self.inputs.include_wind_stress or self.inputs.include_const_wind:
                             ru -= (self.initiate.stoIJK[i][j][k] * self.tau2 * self.inputs.rho_air /
                                    self.inputs.rho_water * self.norm_wind / self.initiate.H[0] *
                                    self.initiate.windDrag_expression_object_list[k] * (0.75 + 0.067 * self.norm_wind) *

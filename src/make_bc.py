@@ -106,7 +106,7 @@ def make_boundary_object_list(boundary_u_dict, boundary_eta_dict, pc_basis_str, 
                 eta_bc_list.append(DirichletBC(eta_function_space, eta_list[0], boundaries, key))
             else:
                 eta_bc_list.append(DirichletBC(eta_function_space, eta_list, boundaries, key))
-        elif isinstance(value, str) and value != "M2 special":
+        elif isinstance(value, str) and value != "M2 special" and value != "M2 special stochastic":
             eta_list = make_sto_modes(pc_basis_str, value)
             if any(["t" in str_list for str_list in eta_list]):
                 eta_time_dependent = True
@@ -124,19 +124,22 @@ def make_boundary_object_list(boundary_u_dict, boundary_eta_dict, pc_basis_str, 
             eta_time_dependent = True
             if n_modes == 1:
                 eta_list_expression = Expression("amp*sin(omega*t)", element=eta_function_space.ufl_element(),
-                                                 t=Constant(0), amp=tidal_amplitude, omega=2 * pi / tidal_period)
+                                                 t=current_t, amp=tidal_amplitude, omega=2 * pi / tidal_period)
             else:
-                t = sp.Symbol('t')
-                tmp_str = str(sp.sin(2 * pi / tidal_period * t))
-                tmp_str = tidal_amplitude + "*sp." + tmp_str
-                # for i in range(n_dim):
-                #     str_dim = "q" + str(i) + "=sp.Symbol('q" + str(i) + "')"
-                #     exec str_dim in globals()
-                #     tmp_str *= eval("q" + str(i))
-                temp_list = make_sto_modes(pc_basis_str, tmp_str)
-                eta_list_expression = Expression(temp_list, element=eta_function_space.ufl_element(), t=current_t)
-
+                temp_list = ["amp*sin(omega*t)"]
+                for k in range(n_modes - 1):
+                    temp_list.append("0.0")
+                eta_list_expression = Expression(temp_list, element=eta_function_space.ufl_element(), t=current_t,
+                                                 amp=tidal_amplitude, omega=2 * pi / tidal_period)
             eta_bc_list.append(DirichletBC(eta_function_space, eta_list_expression, boundaries, key))
+        elif value == "M2 special stochastic":
+            # tidal_amplitude should be a string "0.75 * q0 * q1"
+            eta_time_dependent = True
+            t = sp.Symbol('t')
+            tmp_str = str(sp.sin(2 * pi / tidal_period * t))
+            tmp_str = tidal_amplitude + "*sp." + tmp_str
+            temp_list = make_sto_modes(pc_basis_str, tmp_str)
+            eta_list_expression = Expression(temp_list, element=eta_function_space.ufl_element(), t=current_t)
         else:
             raise TypeError("enter wrong boundary eta type.")
 

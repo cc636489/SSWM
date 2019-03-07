@@ -110,6 +110,7 @@ class ModelReadInput:
         self.linear_divergence = linear_divergence
         self.include_les = include_les
         self.include_wind_stress = include_wind_stress
+        self.include_const_wind = include_const_wind
         self.include_bottom_stress = include_bottom_stress
         self.include_atmospheric_pressure = include_atmospheric_pressure
         self.include_supg = include_supg
@@ -119,6 +120,9 @@ class ModelReadInput:
         self.USE_pvd = USE_pvd
         self.USE_HDF5 = USE_HDF5
         self.USE_iterative = USE_iterative
+
+        self.wind_x = wind_x
+        self.wind_y = wind_y
 
         self.tidal_amplitude = tidal_amplitude
         self.tidal_period = tidal_period
