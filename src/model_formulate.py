@@ -1,6 +1,6 @@
 
 
-from fenics import inner, grad, DOLFIN_EPS, dx, CellSize, div, dot, Constant
+from fenics import inner, grad, DOLFIN_EPS, dx, CellSize, div, dot, conditional, gt
 
 
 class DetModelFormulate:
@@ -77,10 +77,12 @@ class DetModelFormulate:
 
         self.h = CellSize(self.initiate.mesh)
         # self.tau1 = 0.5*h*pow(4.0*nu/h+2.0*u_norm, -1.0)
-        # self.tau1 = pow( (1./0.5/dt)**2 + (2.*u_norm/h)**2 + 9.0*(4.*nu/h/h)**2, -1.0/2)
+        # self.tau1 = pow((1./0.5/self.initiate.dt)**2 + (2.*self.u0_norm/self.h)**2 +
+        # 9.0*(4.*self.initiate.nu_expression_object_list[0]/self.h/self.h)**2, -1.0/2)
         self.tau1 = pow(1 / 0.5 / self.initiate.dt + 2. * self.u0_norm / self.h +
                         4. * self.initiate.nu_expression_object_list[0] / self.h / self.h, -1.0)
-        self.tau2 = self.tau1
+        self.tau2_u = self.tau1
+        self.tau2_v = self.tau1
 
         self.F_u_tent += ((1 / self.initiate.dt) * inner(self.initiate.v, self.u_diff) * dx +
                           self.initiate.g * inner(self.initiate.v, grad(self.initiate.eta0)) * dx)
@@ -138,13 +140,12 @@ class DetModelFormulate:
             r += inner(self.u0_norm / self.initiate.H * self.initiate.bottomDrag_expression_object_list[0] *
                        self.u_mean, self.tau1 * grad(self.initiate.v) * self.u_bash) * dx
 
-        # TODO: there is one bug in this term, self.u0_norm should be self.norm_wind.
         if self.inputs.include_wind_stress:
             r -= (self.tau1 * dot(self.u_bash, grad(self.initiate.v[0])) * self.inputs.rho_air /
-                  self.inputs.rho_water * self.u0_norm * self.initiate.wind_para_x / self.initiate.H *
+                  self.inputs.rho_water * self.norm_wind * self.initiate.wind_para_x / self.initiate.H *
                   self.initiate.windDrag_expression_object_list[0] * (0.75 + 0.067 * self.norm_wind)) * dx
             r -= (self.tau1 * dot(self.u_bash, grad(self.initiate.v[1])) * self.inputs.rho_air /
-                  self.inputs.rho_water * self.u0_norm * self.initiate.wind_para_y / self.initiate.H *
+                  self.inputs.rho_water * self.norm_wind * self.initiate.wind_para_y / self.initiate.H *
                   self.initiate.windDrag_expression_object_list[0] * (0.75 + 0.067 * self.norm_wind)) * dx
 
         if self.inputs.include_atmospheric_pressure:
@@ -162,43 +163,54 @@ class DetModelFormulate:
         u_bash_parallel = inner(self.u_bash, grad(u0_mean[0])) * grad(u0_mean[0]) / du_norm ** 2
         v_bash_parallel = inner(self.u_bash, grad(u0_mean[1])) * grad(u0_mean[1]) / dv_norm ** 2
 
+        u_bash_parallel_norm = (u_bash_parallel[0] ** 2 + u_bash_parallel[1] ** 2) ** 0.5
+        v_bash_parallel_norm = (v_bash_parallel[0] ** 2 + v_bash_parallel[1] ** 2) ** 0.5
+
+        tau_parallel_u = pow(1 / 0.5 / self.initiate.dt + 2. * u_bash_parallel_norm / self.h +
+                             4. * self.initiate.nu_expression_object_list[0] / self.h / self.h, -1.0)
+        tau_parallel_v = pow(1 / 0.5 / self.initiate.dt + 2. * v_bash_parallel_norm / self.h +
+                             4. * self.initiate.nu_expression_object_list[0] / self.h / self.h, -1.0)
+
+        # noticing that, this self.tau2 setting assumes the mesh is not distorted.
+        self.tau2_u = conditional(gt(tau_parallel_u - self.tau1, 0.0), tau_parallel_u - self.tau1, 0.0)
+        self.tau2_v = conditional(gt(tau_parallel_u - self.tau1, 0.0), tau_parallel_v - self.tau1, 0.0)
+
         ru = inner((1 / self.initiate.dt) * self.u_diff[0] + self.initiate.g * grad(self.initiate.eta0)[0],
-                   self.tau2 * dot(grad(self.initiate.v[0]), u_bash_parallel)) * dx
+                   self.tau2_u * dot(grad(self.initiate.v[0]), u_bash_parallel)) * dx
         rv = inner((1 / self.initiate.dt) * self.u_diff[1] + self.initiate.g * grad(self.initiate.eta0)[1],
-                   self.tau2 * dot(grad(self.initiate.v[1]), v_bash_parallel)) * dx
+                   self.tau2_v * dot(grad(self.initiate.v[1]), v_bash_parallel)) * dx
 
         if self.inputs.include_convection:
-            ru += inner(dot(grad(self.u_mean[0]), self.u_bash), self.tau2 *
+            ru += inner(dot(grad(self.u_mean[0]), self.u_bash), self.tau2_u *
                         dot(grad(self.initiate.v[0]), u_bash_parallel)) * dx
-            rv += inner(dot(grad(self.u_mean[1]), self.u_bash), self.tau2 *
+            rv += inner(dot(grad(self.u_mean[1]), self.u_bash), self.tau2_v *
                         dot(grad(self.initiate.v[1]), v_bash_parallel)) * dx
 
         if self.inputs.include_viscosity:
             ru += inner(-div(self.initiate.nu_expression_object_list[0] * grad(self.u_mean[0])),
-                        self.tau2 * dot(grad(self.initiate.v[0]), u_bash_parallel)) * dx
+                        self.tau2_u * dot(grad(self.initiate.v[0]), u_bash_parallel)) * dx
             rv += inner(-div(self.initiate.nu_expression_object_list[0] * grad(self.u_mean[1])),
-                        self.tau2 * dot(grad(self.initiate.v[1]), v_bash_parallel)) * dx
+                        self.tau2_v * dot(grad(self.initiate.v[1]), v_bash_parallel)) * dx
 
         if self.inputs.include_bottom_stress:
             ru += inner(self.u0_norm / self.initiate.H * self.initiate.bottomDrag_expression_object_list[0] *
-                        self.u_mean[0], self.tau2 * dot(grad(self.initiate.v[0]), u_bash_parallel)) * dx
+                        self.u_mean[0], self.tau2_u * dot(grad(self.initiate.v[0]), u_bash_parallel)) * dx
             rv += inner(self.u0_norm / self.initiate.H * self.initiate.bottomDrag_expression_object_list[0] *
-                        self.u_mean[1], self.tau2 * dot(grad(self.initiate.v[1]), v_bash_parallel)) * dx
+                        self.u_mean[1], self.tau2_v * dot(grad(self.initiate.v[1]), v_bash_parallel)) * dx
 
-        # TODO: there is another bug in this term, self.u0_norm should be self.norm_wind.
         if self.inputs.include_wind_stress:
-            ru -= (self.tau2 * dot(grad(self.initiate.v[0]), u_bash_parallel) * self.inputs.rho_air /
-                   self.inputs.rho_water * self.u0_norm * self.initiate.wind_para_x / self.initiate.H *
+            ru -= (self.tau2_u * dot(grad(self.initiate.v[0]), u_bash_parallel) * self.inputs.rho_air /
+                   self.inputs.rho_water * self.norm_wind * self.initiate.wind_para_x / self.initiate.H *
                    self.initiate.windDrag_expression_object_list[0] * (0.75 + 0.067 * self.norm_wind)) * dx
-            rv -= (self.tau2 * dot(grad(self.initiate.v[1]), v_bash_parallel) * self.inputs.rho_air /
-                   self.inputs.rho_water * self.u0_norm * self.initiate.wind_para_y / self.initiate.H *
+            rv -= (self.tau2_v * dot(grad(self.initiate.v[1]), v_bash_parallel) * self.inputs.rho_air /
+                   self.inputs.rho_water * self.norm_wind * self.initiate.wind_para_y / self.initiate.H *
                    self.initiate.windDrag_expression_object_list[0] * (0.75 + 0.067 * self.norm_wind)) * dx
 
         if self.inputs.include_atmospheric_pressure:
             ru += inner(grad(self.initiate.pressure / self.inputs.rho_water)[0],
-                        self.tau2 * dot(grad(self.initiate.v[0]), u_bash_parallel)) * dx
+                        self.tau2_u * dot(grad(self.initiate.v[0]), u_bash_parallel)) * dx
             rv += inner(grad(self.initiate.pressure / self.inputs.rho_water)[1],
-                        self.tau2 * dot(grad(self.initiate.v[1]), v_bash_parallel)) * dx
+                        self.tau2_v * dot(grad(self.initiate.v[1]), v_bash_parallel)) * dx
 
         self.F_u_tent += ru + rv
 
@@ -279,6 +291,7 @@ class StoModelFormulate:
         self.h = CellSize(self.initiate.mesh)
         # self.tau1 = 0.5*h*pow(4.0*nu/h+2.0*u_norm, -1.0)
         # self.tau1 = pow( (1./0.5/dt)**2 + (2.*u_norm/h)**2 + 9.0*(4.*nu/h/h)**2, -1.0/2)
+        # TODO: may consider modify tau2 into max(tau2-tau1, 0)
         self.tau1 = pow(1 / 0.5 / self.initiate.dt + 2. * self.u0_norm / self.h +
                         4. * self.initiate.nu_expression_object_list[0] / self.h / self.h, -1.0)
         self.tau2 = self.tau1
@@ -333,6 +346,13 @@ class StoModelFormulate:
                                           inner(grad(self.initiate.v[2 * k]), grad(self.u_mean[2 * j])) * dx) + \
                                          (self.initiate.stoIJK[i][j][k] * self.initiate.nu_expression_object_list[i] *
                                           inner(grad(self.initiate.v[2 * k + 1]), grad(self.u_mean[2 * j + 1])) * dx)
+                        # TODO: try to use various stabilized terms.
+                        self.F_u_tent += (3000. / self.h * self.initiate.stoIJK[i][j][k] *
+                                          self.initiate.nu_expression_object_list[i] *
+                                          inner(grad(self.initiate.v[2 * k]), grad(self.u_mean[2 * j])) * dx) + \
+                                         (3000. / self.h * self.initiate.stoIJK[i][j][k] *
+                                          self.initiate.nu_expression_object_list[i] *
+                                          inner(grad(self.initiate.v[2 * k + 1]), grad(self.u_mean[2 * j + 1])) * dx)
 
     def add_bottom_stress(self):
         """ add bottom friction source term to tentative water velocity F_u_tent weak form. """
@@ -350,10 +370,10 @@ class StoModelFormulate:
     def add_wind_stress(self):
         """ add wind stress source term to tentative water velocity F_u_tent weak form. """
         for k in range(self.initiate.n_modes):
-            self.F_u_tent -= (self.initiate.v[2 * k] * self.initiate.rho_air / self.initiate.rho_water *
+            self.F_u_tent -= (self.initiate.v[2 * k] * self.inputs.rho_air / self.inputs.rho_water *
                               self.norm_wind * self.initiate.wind_para_x / self.initiate.H[0] *
                               self.initiate.windDrag_expression_object_list[k] * (0.75 + 0.067 * self.norm_wind)) * dx
-            self.F_u_tent -= (self.initiate.v[2 * k + 1] * self.initiate.rho_air / self.initiate.rho_water *
+            self.F_u_tent -= (self.initiate.v[2 * k + 1] * self.inputs.rho_air / self.inputs.rho_water *
                               self.norm_wind * self.initiate.wind_para_y / self.initiate.H[0] *
                               self.initiate.windDrag_expression_object_list[k] * (0.75 + 0.067 * self.norm_wind)) * dx
 
@@ -444,13 +464,13 @@ class StoModelFormulate:
                         if self.inputs.include_wind_stress:
                             r -= (self.initiate.stoIJK[i][j][k] * self.tau1 * self.inputs.rho_air /
                                   self.inputs.rho_water * self.norm_wind / self.initiate.H[0] *
-                                  self.initiate.windDrag_expression_object_list[k] *
+                                  self.initiate.windDrag_expression_object_list[k] * (0.75 + 0.067 * self.norm_wind) *
                                   inner(self.u_bash[2 * i] * grad(self.initiate.v[2 * j])[0] +
                                         self.u_bash[2 * i + 1] * grad(self.initiate.v[2 * j])[1],
-                                        self.initiate.wind_para_x)) * dx + \
-                                 (self.initiate.stoIJK[i][j][k] * self.tau1 * self.inputs.rho_air /
+                                        self.initiate.wind_para_x)) * dx
+                            r -= (self.initiate.stoIJK[i][j][k] * self.tau1 * self.inputs.rho_air /
                                   self.inputs.rho_water * self.norm_wind / self.initiate.H[0] *
-                                  self.initiate.windDrag_expression_object_list[k] *
+                                  self.initiate.windDrag_expression_object_list[k] * (0.75 + 0.067 * self.norm_wind) *
                                   inner(self.u_bash[2 * i] * grad(self.initiate.v[2 * j + 1])[0] +
                                         self.u_bash[2 * i + 1] * grad(self.initiate.v[2 * j + 1])[1],
                                         self.initiate.wind_para_y)) * dx
@@ -485,7 +505,7 @@ class StoModelFormulate:
                                            self.u_bash[2 * i + 1] * grad(u0_mean[2 * j + 1])[1]
                                            ) * grad(u0_mean[2 * j + 1]) / dv_norm ** 2
 
-                        # add SUPG transient term.
+                        # add crosswind transient term.
                         ru = self.initiate.stoIJK[i][j][k] * self.tau2 / self.initiate.dt * \
                             inner(dot(grad(self.initiate.v[2 * j]), u_bash_parallel),
                                   self.u_diff[2 * k]) * dx
@@ -493,7 +513,7 @@ class StoModelFormulate:
                             inner(dot(grad(self.initiate.v[2 * j + 1]), v_bash_parallel),
                                   self.u_diff[2 * k + 1]) * dx
 
-                        # add SUPG gravity term.
+                        # add crosswind gravity term.
                         ru += self.initiate.stoIJK[i][j][k] * self.tau2 * self.initiate.g * \
                             inner(dot(grad(self.initiate.v[2 * j]), u_bash_parallel),
                                   grad(self.initiate.eta0[k])[0]) * dx
@@ -501,7 +521,7 @@ class StoModelFormulate:
                             inner(dot(grad(self.initiate.v[2 * j + 1]), v_bash_parallel),
                                   grad(self.initiate.eta0[k])[1]) * dx
 
-                        # add convective term.
+                        # add crosswind convective term.
                         if self.inputs.include_convection:
                             ru += self.initiate.stoIJK[i][j][k] * self.initiate.stoIJK[i][j][k] * self.tau2 * \
                                 inner(dot(grad(self.initiate.v[2 * j]), u_bash_parallel),
@@ -512,7 +532,7 @@ class StoModelFormulate:
                                       self.u_bash[2 * i] * grad(self.u_mean[2 * j + 1])[0] +
                                       self.u_bash[2 * i + 1] * grad(self.u_mean[2 * j + 1])[1]) * dx
 
-                        # add viscosity term.
+                        # add crosswind viscosity term.
                         if self.inputs.include_viscosity:
                             ru += self.initiate.stoIJK[i][j][k] * self.initiate.stoIJK[i][j][k] * self.tau2 * \
                                 inner(dot(grad(self.initiate.v[2 * j]), u_bash_parallel),
@@ -523,7 +543,7 @@ class StoModelFormulate:
                                       -div(self.initiate.nu_expression_object_list[i] * grad(self.u_mean[2 * j + 1]))
                                       ) * dx
 
-                        # add SUPG bottom friction forcing term.
+                        # add crosswind bottom friction forcing term.
                         if self.inputs.include_bottom_stress:
                             ru += (self.initiate.stoIJK[i][j][k] * self.initiate.stoIJK[i][j][k] * self.tau2 *
                                    self.u0_norm / self.initiate.H[0] *
@@ -536,20 +556,20 @@ class StoModelFormulate:
                                    inner(dot(grad(self.initiate.v[2 * j + 1]), v_bash_parallel), self.u_mean[2 * j + 1])
                                    ) * dx
 
-                        # add SUPG wind forcing term.
+                        # add crosswind wind forcing term.
                         if self.inputs.include_wind_stress:
                             ru -= (self.initiate.stoIJK[i][j][k] * self.tau2 * self.inputs.rho_air /
                                    self.inputs.rho_water * self.norm_wind / self.initiate.H[0] *
-                                   self.initiate.windDrag_expression_object_list[k] *
+                                   self.initiate.windDrag_expression_object_list[k] * (0.75 + 0.067 * self.norm_wind) *
                                    inner(dot(grad(self.initiate.v[2 * j]), u_bash_parallel),
                                          self.initiate.wind_para_x)) * dx
                             rv -= (self.initiate.stoIJK[i][j][k] * self.tau2 * self.inputs.rho_air /
                                    self.inputs.rho_water * self.norm_wind / self.initiate.H[0] *
-                                   self.initiate.windDrag_expression_object_list[k] *
+                                   self.initiate.windDrag_expression_object_list[k] * (0.75 + 0.067 * self.norm_wind) *
                                    inner(dot(grad(self.initiate.v[2 * j + 1]), v_bash_parallel),
                                          self.initiate.wind_para_y)) * dx
 
-                        # add SUPG atmospheric pressure term.
+                        # add crosswind atmospheric pressure term.
                         if self.inputs.include_atmospheric_pressure:
                             ru += (self.initiate.stoIJK[i][j][k] * self.tau2 / self.inputs.rho_water * inner(
                                         dot(grad(self.initiate.v[2 * j]), u_bash_parallel),

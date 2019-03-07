@@ -3,7 +3,7 @@
 ##################################################################
 # output file name string
 input_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/7-SSWM-github/input/"
-output_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test/"
+output_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"
 output_str = "gulf_winds_harvey_test_withles0.17_withsupg_withcross_"
 bath_file = "Gulf_wind_bathymetry.nc"
 mesh_file = "Gulf_wind.xml"

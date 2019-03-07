@@ -31,7 +31,7 @@ domain = {"importfile": input_dir+mesh_file}
 # stochastic coefficient # if contains sin(), cos(), should use sympy sin and sympy cos!!!!!!!!!!
 sto_viscosity = "1e-6"
 sto_bottomDrag = "0.0015"
-sto_windDrag = "0.0002*q0*q1"
+sto_windDrag = "0.001"
 
 # terms control
 include_viscosity = True
@@ -43,14 +43,14 @@ include_bottom_stress = True
 include_atmospheric_pressure = False
 include_supg = True
 include_crosswind = True
-les_parameters = {'smagorinsky_coefficient': 0.3}
+les_parameters = {'smagorinsky_coefficient': 0.17}
 DEBUG_mode = False
 USE_pvd = True
 USE_HDF5 = True
 USE_iterative = False
 
 # time parameter setting
-tidal_amplitude = 0.75
+tidal_amplitude = "0.75*q0*q1"
 tidal_period = 12.41666*60*60
 start_time = 0.0
 end_time = 223500
@@ -91,7 +91,10 @@ initial_eta = {"flat": 0.0}
 bc_file = input_dir + boundary_file
 # boundary_u = {1: "no_slip", 2: "no_slip", 3: "no_slip"}
 boundary_u = {}
+# if inlet test case, boundary number should be 2;
 boundary_eta = {2: "M2 special"}
+
+
 # second way:
 # bc_file = None
 # boundary_u = {1: "free_slip_in_y", 2: "free_slip_in_y", 3: "free_slip_in_x", 4: "free_slip_in_x"}

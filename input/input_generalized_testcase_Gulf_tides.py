@@ -88,6 +88,7 @@ initial_eta = {"flat": 0.0}
 bc_file = input_dir + boundary_file
 # boundary_u = {1: "no_slip", 2: "no_slip", 3: "no_slip"}
 boundary_u = {}
+# if generalized gulf domain, the boundary number should be 3.
 boundary_eta = {3: "M2 special"}
 # boundary_eta = {}
 # second way:

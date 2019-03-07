@@ -4,7 +4,7 @@
 # output file name string
 input_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/7-SSWM-github/input/"
 output_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test/"
-output_str = "gulf_winds_ike_test_"
+output_str = "gulf_winds_ike_test_withles0.17_withcrosswind_withsupg_"
 bath_file = "Gulf_wind_bathymetry.nc"
 mesh_file = "Gulf_wind.xml"
 wind_file = "Gulf_wind.ike.fort.22"
@@ -46,8 +46,8 @@ include_supg = True
 include_crosswind = True
 les_parameters = {'smagorinsky_coefficient': 0.17}
 DEBUG_mode = False
-USE_pvd = True
-USE_HDF5 = False
+USE_pvd = False
+USE_HDF5 = True
 USE_iterative = False
 
 

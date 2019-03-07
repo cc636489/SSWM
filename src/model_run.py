@@ -128,14 +128,14 @@ class ModelRun:
 
         self._run_create_file()
         self._run_write_file()
-        self._run_initialize_bins()
+        self._run_initialize_bins()  # include create_bins and zeros the initial time step.
+        self._update_time()
 
     def running(self):
         """ iterate each time step to solve formulated weak forms. """
         while float(self.initiate.t - self.initiate.finish_time) < -1e-3:
 
-            self._update_time()
-            print "step:", self.time_step_count, "  time is: ", float(self.initiate.t)
+            print "starting step:", self.time_step_count, "  time is: ", float(self.initiate.t)
 
             self._update_boundary()
 
@@ -163,6 +163,8 @@ class ModelRun:
 
             self._run_write_file()
             self._run_write_bins()
+
+            self._update_time()
 
     def run_final(self):
         """ save results to files. """
@@ -200,8 +202,8 @@ class ModelRun:
                                                          self.inputs.output_str + "0.xdmf"))
             if self.inputs.USE_HDF5:
                 self.wind_xy_used_for_read_back.append(HDF5File(self.initiate.mesh.mpi_comm(), self.inputs.output_dir +
-                                                         "wind_used_for_read_back_" + self.inputs.output_str +
-                                                         "0.h5", "w"))
+                                                                "wind_used_for_read_back_" + self.inputs.output_str +
+                                                                "0.h5", "w"))
 
     def _run_write_file(self):
         """ write to files. """
