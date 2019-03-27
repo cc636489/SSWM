@@ -95,7 +95,7 @@ bc_file = input_dir + boundary_file
 # boundary_u = {1: "no_slip", 2: "no_slip", 3: "no_slip"}
 boundary_u = {}
 # if inlet test case, boundary number should be 2;
-boundary_eta = {2: "M2 special"}
+boundary_eta = {}
 
 
 # second way:

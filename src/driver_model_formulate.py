@@ -43,7 +43,7 @@ def model_formulate_driver(inputs, initiate):
         if inputs.include_bottom_stress:
             formulate.add_bottom_stress()
 
-        if inputs.include_wind_stress:
+        if inputs.include_wind_stress or inputs.include_const_wind:
             formulate.add_wind_stress()
 
         if inputs.include_supg:

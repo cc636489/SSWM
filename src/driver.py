@@ -8,7 +8,7 @@ from driver_model_run import model_run_driver
 
 import sys
 sys.path.insert(0, '/workspace/Documentation/Research_Doc/SFEM_Doc/7-NS-github/input')
-sys.setrecursionlimit(10000)
+sys.setrecursionlimit(50000)
 
 # TODO: design a User Interface for 2D-SSWM based on this input file.
 

@@ -280,7 +280,7 @@ class StoModelFormulate:
 
         self.eta1_diff = self.initiate.eta1 - self.initiate.eta0
 
-        if self.inputs.include_wind_stress:
+        if self.inputs.include_wind_stress or self.inputs.include_const_wind:
             self.norm_wind = (self.initiate.wind_para_x ** 2 + self.initiate.wind_para_y ** 2) ** 0.5
 
         self.F_u_tent = 0

@@ -352,6 +352,10 @@ class ModelInitiate:
         self.wind = MakeWind(self.inputs)
 
     def make_const_wind(self):
+        if self.inputs.wind_x < 1e-6:
+            self.inputs.wind_x = 1e-6
+        if self.inputs.wind_y < 1e-6:
+            self.inputs.wind_y = 1e-6
         self.wind_para_x = Constant(self.inputs.wind_x)
         self.wind_para_y = Constant(self.inputs.wind_y)
 
@@ -360,7 +364,7 @@ class ModelInitiate:
         nu_expression_list, bottom_drag_expression_list, wind_drag_expression_list = make_sto_modes(
             self.basis_str, self.inputs.sto_viscosity, self.inputs.sto_bottomDrag, self.inputs.sto_windDrag)
 
-        if self.inputs.include_wind_stress:
+        if self.inputs.include_wind_stress or self.inputs.include_const_wind:
             for kk in range(self.n_modes):
                 self.windDrag_expression_object_list.append(
                     Expression(wind_drag_expression_list[kk], element=self.B.ufl_element(), domain=self.mesh))
