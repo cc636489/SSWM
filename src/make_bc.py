@@ -140,6 +140,7 @@ def make_boundary_object_list(boundary_u_dict, boundary_eta_dict, pc_basis_str, 
             tmp_str = tidal_amplitude + "*sp." + tmp_str
             temp_list = make_sto_modes(pc_basis_str, tmp_str)
             eta_list_expression = Expression(temp_list, element=eta_function_space.ufl_element(), t=current_t)
+            eta_bc_list.append(DirichletBC(eta_function_space, eta_list_expression, boundaries, key))
         else:
             raise TypeError("enter wrong boundary eta type.")
 

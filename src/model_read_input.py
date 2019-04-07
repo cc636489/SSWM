@@ -1,6 +1,6 @@
 """ class of reading input. """
 
-from input.input_generalized import *
+from input_generalized import *
 
 
 class ModelReadInput:

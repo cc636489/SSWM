@@ -18,7 +18,7 @@ test_node_y = [3.3574974964899998e+06]
 
 # stochastic basis
 dist_name = "uniform"  # "uniform"  or "gaussian"   ==> only enable "uniform" mode at present.
-sto_poly_deg = 2  # polynomial chaos order is 2.
+sto_poly_deg = 1  # polynomial chaos order is 2.
 # the dimension and coefficient should be paired and dim!=0  and coefficient!=Null
 sto_poly_dim = 2  # use "q0","q1","q2", ....
 coefficient = [0.8, 1.2, 0.9, 1.1]  # lower1/upper1--lower2/upper2--...
@@ -40,11 +40,14 @@ include_convection = True
 linear_divergence = False
 include_les = True
 include_wind_stress = True
+include_const_wind = False
+wind_x = 1.0
+wind_y = 0.0
 include_bottom_stress = True
 include_atmospheric_pressure = True
 include_supg = True
 include_crosswind = True
-les_parameters = {'smagorinsky_coefficient': 0.17}
+les_parameters = {'smagorinsky_coefficient': 1.0}
 DEBUG_mode = False
 USE_pvd = True
 USE_HDF5 = True
