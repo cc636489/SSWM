@@ -4,10 +4,10 @@
 # output file name string
 input_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/7-SSWM-github/input/"
 output_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"
-output_str = "test4_stochastic_"
+output_str = "test4_stochastic_finer_mesh_7_1_060_"
 bath_file = "inlet_adh_sswm_finer.nc"
 mesh_file = "inlet_adh_sswm_finer.xml"
-wind_file = " "
+wind_file = ""
 boundary_file = "inlet_adh_sswm_finer_facet_region.xml"
 
 # stochastic input
@@ -31,7 +31,7 @@ domain = {"importfile": input_dir+mesh_file}
 # stochastic coefficient # if contains sin(), cos(), should use sympy sin and sympy cos!!!!!!!!!!
 sto_viscosity = "1e-6"
 sto_bottomDrag = "0.0015"
-sto_windDrag = "0.001"
+sto_windDrag = "0.001 * q0 * q1"
 
 # terms control
 include_viscosity = True
@@ -39,27 +39,28 @@ include_convection = True
 linear_divergence = False
 include_les = True
 include_wind_stress = False
-include_const_wind = False
+include_const_wind = True
 wind_x = 1.0
 wind_y = 0.0
 include_bottom_stress = True
 include_atmospheric_pressure = False
 include_supg = True
 include_crosswind = True
-les_parameters = {'smagorinsky_coefficient': 0.17}
+include_auxiliary_viscosity = True
+include_interior_penalty = True
+les_parameters = {'smagorinsky_coefficient': 1.0}
 DEBUG_mode = False
 USE_pvd = True
 USE_HDF5 = True
 USE_iterative = False
 
 # time parameter setting
-tidal_amplitude = 0.75   # "M2 special stochastic", should be "0.75*q0*q1"
+tidal_amplitude = 0.6   # "M2 special stochastic", should be "0.75*q0*q1"
 tidal_period = 12.41666*60*60
 start_time = 0.0
 end_time = 223500
 time_step = 447
 theta = 1.0
-
 
 # equation parameter setting
 wind_dt = 3600 * 6
@@ -89,11 +90,12 @@ initial_eta = {"flat": 0.0}
 # initial_u ={"vary": ('2*x+3*y', '3*y')}
 # initial_eta = {"vary": "sp.cos(pi/100.0*x) "}
 
+
 # boundary condition
 # first way:
 bc_file = input_dir + boundary_file
 # boundary_u = {1: "no_slip", 2: "no_slip", 3: "no_slip"}
-boundary_u = {}
+boundary_u = {2: "free_slip_in_y"}
 # if inlet test case, boundary number should be 2;
 boundary_eta = {2: "M2 special"}
 

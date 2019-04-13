@@ -1,7 +1,8 @@
 
 
 from fenics import inner, grad, DOLFIN_EPS, dx, ds, dS, \
-    CellSize, div, dot, conditional, gt, FacetNormal, FacetArea, jump
+    CellSize, div, dot, conditional, gt, FacetNormal, FacetArea, jump, Expression, pi, Constant, FacetFunction
+# from fenics import *
 
 
 class DetModelFormulate:
@@ -106,6 +107,17 @@ class DetModelFormulate:
         """ add viscosity term to tentative water velocity F_u_tent weak form. """
         self.F_u_tent += self.initiate.nu_expression_object_list[0] * inner(grad(self.initiate.v),
                                                                             grad(self.u_mean)) * dx
+
+    def add_auxiliary_viscosity(self):
+        """ add auxiliary viscosity term to tentative water velocity F_u_tent weak form. """
+        self.F_u_tent += 7 * self.u0_norm * self.h / 2.0 * self.initiate.nu_expression_object_list[0] * inner(
+            grad(self.initiate.v), grad(self.u_mean)) * dx
+
+    def add_interior_penalty(self):
+        """ Interior penalty method from OpenTidalFarm, if smooth, should be zeros """
+        sigma = 1.0
+        self.F_u_tent += sigma * self.initiate.nu_expression_object_list[0] / self.h_edge * inner(
+            jump(grad(self.initiate.v), self.n), jump(grad(self.u_mean), self.n)) * dS
 
     def add_bottom_stress(self):
         """ add bottom friction source term to tentative water velocity F_u_tent weak form. """
@@ -300,10 +312,17 @@ class StoModelFormulate:
         self.tau2 = self.tau1
 
         for k in range(self.initiate.n_modes):
+
             self.F_u_tent += (1 / self.initiate.dt) * inner(self.initiate.v[2 * k], self.u_diff[2 * k]) * dx + \
                              (1 / self.initiate.dt) * inner(self.initiate.v[2 * k + 1], self.u_diff[2 * k + 1]) * dx + \
                              self.initiate.g * inner(self.initiate.v[2 * k], grad(self.initiate.eta0[k])[0]) * dx + \
                              self.initiate.g * inner(self.initiate.v[2 * k + 1], grad(self.initiate.eta0[k])[1]) * dx
+
+            # TODO: introduce this term weakly imposed v.n=0 in F_u_tent. v is now H1 and H(div)
+            # self.F_u_tent += (1 / self.initiate.dt) * inner(self.initiate.v[2 * k], self.u_diff[2 * k]) * dx + \
+            #                  (1 / self.initiate.dt) * inner(self.initiate.v[2 * k + 1], self.u_diff[2 * k + 1]) * dx - \
+            #                  self.initiate.g * self.initiate.eta0[k] * (grad(self.initiate.v[2 * k])[0] +
+            #                                                             grad(self.initiate.v[2 * k + 1])[1]) * dx
 
             self.F_p_corr += inner(self.eta_diff[k], self.initiate.q[k]) * dx
 
@@ -350,7 +369,12 @@ class StoModelFormulate:
                                          (self.initiate.stoIJK[i][j][k] * self.initiate.nu_expression_object_list[i] *
                                           inner(grad(self.initiate.v[2 * k + 1]), grad(self.u_mean[2 * j + 1])) * dx)
 
-                        # TODO: try to use various stabilized terms, just for test case 4 and above.currently satisfied.
+    def add_auxiliary_viscosity(self):
+        """ add auxiliary viscosity term to tentative water velocity F_u_tent weak form. """
+        for k in range(self.initiate.n_modes):
+            for j in range(self.initiate.n_modes):
+                for i in range(self.initiate.n_modes):
+                    if abs(self.initiate.stoIJK[i][j][k]) > DOLFIN_EPS:
                         self.F_u_tent += (7 * self.u0_norm * self.h / 2.0 * self.initiate.stoIJK[i][j][k] *
                                           self.initiate.nu_expression_object_list[i] *
                                           inner(grad(self.initiate.v[2 * k]), grad(self.u_mean[2 * j])) * dx) + \
@@ -366,7 +390,12 @@ class StoModelFormulate:
                         #                   self.initiate.stoIJK[i][j][k] *
                         #                   inner(self.initiate.v[2 * k + 1], self.u_mean[2 * j + 1]) * ds)
 
-                        # TODO: Interior penalty method from OpenTidalFarm, if smooth, should be zeros:
+    def add_interior_penalty(self):
+        """ Interior penalty method from OpenTidalFarm, if smooth, should be zeros. """
+        for k in range(self.initiate.n_modes):
+            for j in range(self.initiate.n_modes):
+                for i in range(self.initiate.n_modes):
+                    if abs(self.initiate.stoIJK[i][j][k]) > DOLFIN_EPS:
                         self.F_u_tent += (1.0 * self.initiate.nu_expression_object_list[i] / self.h_edge *
                                           self.initiate.stoIJK[i][j][k] *
                                           inner(jump(grad(self.initiate.v[2 * k]), self.n),

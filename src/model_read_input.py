@@ -115,6 +115,8 @@ class ModelReadInput:
         self.include_atmospheric_pressure = include_atmospheric_pressure
         self.include_supg = include_supg
         self.include_crosswind = include_crosswind
+        self.include_auxiliary_viscosity = include_auxiliary_viscosity
+        self.include_interior_penalty = include_interior_penalty
         self.les_parameters = les_parameters
         self.DEBUG_mode = DEBUG_mode  # not fully implemented yet
         self.USE_pvd = USE_pvd
