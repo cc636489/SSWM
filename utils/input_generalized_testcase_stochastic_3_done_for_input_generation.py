@@ -3,8 +3,8 @@
 ##################################################################
 # output file name string
 input_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/7-SSWM-github/input/"
-output_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/test3_truth/"
-output_str = "test3_deterministic_0.91_0.95_"
+output_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"
+output_str = "test3_stochastic_"
 bath_file = "hump_adcirc_sswm.nc"
 mesh_file = "hump_adcirc_sswm.xml"
 wind_file = " "
@@ -17,7 +17,7 @@ test_node_y = [100.]
 
 # stochastic basis
 dist_name = "uniform"  # "uniform"  or "gaussian"   ==> only enable "uniform" mode at present.
-sto_poly_deg = 0  # polynomial chaos order is 2.
+sto_poly_deg = 3  # polynomial chaos order is 2.
 # the dimension and coefficient should be paired and dim!=0  and coefficient!=Null
 sto_poly_dim = 2  # use "q0","q1","q2", ....
 coefficient = [0.8, 1.2, 0.9, 1.1]  # lower1/upper1--lower2/upper2--...
@@ -79,9 +79,9 @@ one2ten = 0.8928
 # bathymetry setting
 #bathymetry = {"flat": 20.}
 #bathymetry = {"vary": "2*x+3*y"}
-string1 = "5.0"
-string2 = "-2.71578947368"
-string3 = "5.71578947368"
+string1 = "-3.0 * q0 + 6.0 * q1 + 2.0"
+string2 = "-3.0 * q0"
+string3 = "6.0 * q1"
 bathymetry = {"class": ['type1', 400, 600, string1,
                         string2 + ' * ((x-500.0)/100.0)**4 + ' + string3 + ' * ((x-500.0)/100.0)**2 + 2.0']}
 # bathymetry = {"class": ['type2', 2150, '-14.0/2150.0*x + 19.0', '5.0']}

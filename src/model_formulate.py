@@ -70,7 +70,7 @@ class DetModelFormulate:
 
         self.eta1_diff = self.initiate.eta1 - self.initiate.eta0
 
-        if self.inputs.include_wind_stress:
+        if self.inputs.include_wind_stress or self.inputs.include_const_wind:
             self.norm_wind = (self.initiate.wind_para_x ** 2 + self.initiate.wind_para_y ** 2) ** 0.5
 
         self.F_u_tent = 0
@@ -78,6 +78,8 @@ class DetModelFormulate:
         self.F_u_corr = 0
 
         self.h = CellSize(self.initiate.mesh)
+        self.h_edge = FacetArea(self.initiate.mesh)('+')
+        self.n = FacetNormal(self.initiate.mesh)
         # self.tau1 = 0.5*h*pow(4.0*nu/h+2.0*u_norm, -1.0)
         # self.tau1 = pow((1./0.5/self.initiate.dt)**2 + (2.*self.u0_norm/self.h)**2 +
         # 9.0*(4.*self.initiate.nu_expression_object_list[0]/self.h/self.h)**2, -1.0/2)
@@ -334,6 +336,7 @@ class StoModelFormulate:
                               self.initiate.ut[2 * k + 1] * self.initiate.v[2 * k + 1] +
                               self.initiate.dt * self.initiate.g * self.initiate.theta *
                               self.initiate.v[2 * k + 1] * grad(self.eta1_diff[k])[1]) * dx
+
             for j in range(self.initiate.n_modes):
                 for i in range(self.initiate.n_modes):
                     if abs(self.initiate.stoIJK[i][j][k]) > DOLFIN_EPS:

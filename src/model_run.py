@@ -263,7 +263,7 @@ class ModelRun:
         """ write to array of stochastic results. """
         for j in range(self.inputs.n_sample):
             for k in range(self.inputs.n_sample):
-                ort_list = [self.initiate.ort_pol[mode](self.sample_x[j], self.sample_x[k])
+                ort_list = [self.initiate.ort_pol[mode](self.sample_x[j], self.sample_y[k])
                             for mode in range(self.initiate.n_modes)]
                 for m in range(len(self.test_nodes)):
                     u1_list = [self.initiate.u1(self.test_nodes[m][0], self.test_nodes[m][1])[2 * p]

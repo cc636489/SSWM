@@ -1,7 +1,6 @@
 
 from fenics import *
 
-
 mesh = RectangleMesh(Point(0,0), Point(100, 50), 100, 50)
 a = FunctionSpace(mesh, "CG", 1)
 eta = Function(a)
