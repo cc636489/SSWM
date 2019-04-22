@@ -1,77 +1,107 @@
+
+
+from fenics import *
 import numpy as np
+import subprocess
 import sys
-sys.path.append('/workspace/Documentation/Research_Doc/SFEM_Doc/7-NS-bitbucket/src/')
-from makestobasis import *
-import chaospy as cp
+sys.path.insert(0, '/workspace/Documentation/Research_Doc/SFEM_Doc/7-SSWM-github/src')
+from make_sto_basis import make_sto_basis 
 import matplotlib.pyplot as plt
 import seaborn as sns
 import matplotlib.ticker as mtick
 
+name = "test2"
+# input_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"+name+"_stochastic/500_steps_060/"
+input_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"+name+"_stochastic/"
+output_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"+name+"_results/"
+mesh_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/7-SSWM-github/input/"
+#mesh_file = "inlet_adh_sswm_finer.xml"
+#u_file = "u_used_for_read_back_" + name + "_stochastic_finer_mesh_7_1_060_0"
+#eta_file = "eta_used_for_read_back_" + name + "_stochastic_finer_mesh_7_1_060_0"
+u_file = "u_used_for_read_back_" + name + "_stochastic_"
+eta_file = "eta_used_for_read_back_" + name + "_stochastic_"
 
-loc = '/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/'
-dir = 'test2_res/'
-name = 'u'
-file = loc + dir + name + '_modes_25_50_ts.csv'
-scale = 1.05
-ns = 1000
+n_sample = 1000
+test_node_x = [25.0, 50.0, 75.0]
+test_node_y = [25.0]
 
-
-distname = "uniform"
+dist_name = "uniform"
 sto_poly_deg = 4
 sto_poly_dim = 2
-coefficient = [-1.2, 1.2, -2, 2]
+coefficient = [-1.2, 1.2, -2.0, 2.0]
 
-basis_struct = MakeStoBasis(distname, sto_poly_deg, sto_poly_dim, coefficient)
-orthpol = basis_struct.get("basis")
-JointCDF = basis_struct.get("jointcdf")
-nmodes = basis_struct.get('nmodes')
+basis = make_sto_basis(dist_name, sto_poly_deg, sto_poly_dim, coefficient)
+orth = basis["basis"]
+JointCDF = basis.get("joint_cdf")
+n_modes = basis["n_modes"]
 
-# check orthogonality
-for i in range(len(orthpol)):
-    print cp.E(orthpol[i]*orthpol[i], JointCDF)
+time_step = 100
 
-# read in row, col
-with open(file, 'r') as f:
-    for i, line in enumerate(f):
-        line = line.split(',')
-        col = len(line) - 1
-    row = i
+#mesh = Mesh(mesh_dir + mesh_file)
+mesh = RectangleMesh(Point(0, 0), Point(100, 50), 20, 10)
+B = FunctionSpace(mesh, "CG", 1)
+C = VectorFunctionSpace(mesh, "CG", 2, dim=2)
 
-# initialization
-time = np.arange(0, row, 1)
-index = np.zeros(col, dtype=int)
-field = np.zeros([row, col])
-field_std = np.zeros(row)
+eta, eta_f, u, u_f = [], [], [], []
+for mode in range(n_modes):
+    eta.append(Function(B))
+    u.append(Function(C))
+    eta_input_file = eta_file + '{:02d}'.format(mode) + ".h5"
+    eta_f.append(HDF5File(mesh.mpi_comm(), input_dir + eta_input_file, "r"))
+    u_input_file = u_file + '{:02d}'.format(mode) + ".h5"
+    u_f.append(HDF5File(mesh.mpi_comm(), input_dir + u_input_file, "r"))
 
-# file read
-with open(file, 'r') as f:
-    for i, line in enumerate(f):
-        line = line.split(',')
-        if i == 0:
-            for j in range(col):
-                index[j] = int(line[j+1])
-        if i != 0:
-            # time[i-1] = float(line[0])
-            for j in range(col):
-                field[i-1, j] = float(line[j+1])
+test_nodes = [[a, b] for a in test_node_x for b in test_node_y]
+samples = JointCDF.sample(n_sample) 
 
-# model formulate
-sample = JointCDF.sample(ns)
+for k in range(time_step):
 
-for step in range(1, row):
-    random_res = []
-    for j in range(ns):
-        sum = 0
-        for l, i in enumerate(index):
-            sum += field[step, l] * orthpol[i](sample[0, j], sample[1, j])
-        random_res.append(sum)
-    # plot pdf
-    plt.figure(figsize=[7, 6])
-    sns.distplot(random_res, bins=30)
-    plt.xlabel(name)
-    plt.ylabel('pdf')
-    plt.xticks(np.linspace(min(random_res), max(random_res), 8))
-    plt.gca().xaxis.set_major_formatter(mtick.FormatStrFormatter('%.3f'))
-    plt.title('time = ' + str(step) + ' sec')
-    # plt.show()
-    plt.savefig(file[:-4]+'_'+str(step)+'.png')
+    print "start: timestep = " + str(k)
+
+    dataset_u = "WaterVelocity/vector_%d"%k
+    dataset_eta = "SurfaceElevation/vector_%d"%k
+
+    for mode in range(n_modes):
+        u_f[mode].read(u[mode], dataset_u)
+        eta_f[mode].read(eta[mode], dataset_eta)
+
+    for i, item in enumerate(test_nodes): 
+
+        print "    test_nodes: " + str(i) + " : x = " + str(round(item[0], 2)) + "; y = " + str(round(item[1], 2)) 
+
+        u1_list = [u[p](item[0], item[1])[0] for p in range(n_modes)]
+        v1_list = [u[p](item[0], item[1])[1] for p in range(n_modes)]
+        eta1_list = [eta[p](item[0], item[1]) for p in range(n_modes)]
+
+        u_random_output, v_random_output, eta_random_output = [], [], []
+        for m in range(n_sample):
+            orth_list = [orth[mode](samples[0][m], samples[1][m]) for mode in range(n_modes)]
+            u_random_output.append(np.dot(orth_list, u1_list))
+            v_random_output.append(np.dot(orth_list, v1_list))
+            eta_random_output.append(np.dot(orth_list, eta1_list))
+
+        # plot
+        for j, field in enumerate([u_random_output, v_random_output, eta_random_output]):
+            #import pdb;pdb.set_trace()
+            try:
+                plt.figure(figsize=[7, 6])
+                sns.distplot(field, bins=30)
+                plt.xticks(np.linspace(min(field), max(field), 10))
+                plt.gca().xaxis.set_major_formatter(mtick.FormatStrFormatter('%.3f'))
+                plt.ylabel('Probability density function')
+                if j == 0:
+                    plt.xlabel('x-direction velocity')
+                    plt.title('Pdf of x-direction water velocity at node ('+ str(item[0]) + ', ' + str(item[1]) +'); time step = ' + str(k) + ';')
+                    plt.savefig(output_dir + 'u_display_density_plot_testnode_' + str(item[0]) + '_' + str(item[1]) +'_timestep_'+str(k)+'.png')
+                elif j == 1:
+                    plt.xlabel('y-direction velocity')
+                    plt.title('Pdf of y-direction water velocity at node ('+ str(item[0]) + ', ' + str(item[1]) +'); time step = ' + str(k) + ';')
+                    plt.savefig(output_dir + 'v_display_density_plot_testnode_' + str(item[0]) + '_' + str(item[1]) +'_timestep_'+str(k)+'.png')
+                else:
+                    plt.xlabel('Surface Elevation')
+                    plt.title('Pdf of surface elevation at node ('+ str(item[0]) + ', ' + str(item[1]) +'); time step = ' + str(k) + ';')
+                    plt.savefig(output_dir + 'eta_display_density_plot_testnode_' + str(item[0]) + '_' + str(item[1]) +'_timestep_'+str(k)+'.png')
+                plt.close()
+            except:
+                print "this field formulate a singular matrix. skip this time step at present."
+                pass

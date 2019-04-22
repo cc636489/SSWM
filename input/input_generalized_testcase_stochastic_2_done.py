@@ -3,7 +3,7 @@
 ##################################################################
 # output file name string
 input_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/7-SSWM-github/input/"
-output_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"
+output_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/test2_results_new_test_for_reasonable_pdf/"
 output_str = "test2_stochastic_"
 bath_file = " "
 mesh_file = " "
@@ -20,7 +20,7 @@ dist_name = "uniform"  # "uniform"  or "gaussian"   ==> only enable "uniform" mo
 sto_poly_deg = 4  # polynomial chaos order is 2.
 # the dimension and coefficient should be paired and dim!=0  and coefficient!=Null
 sto_poly_dim = 2  # use "q0","q1","q2", ....
-coefficient = [-1.2, 1.2, -2, 2]  # lower1/upper1--lower2/upper2--...
+coefficient = [0.2, 1.2, 1.0, 2.0]  # lower1/upper1--lower2/upper2--...
 
 # horizontal domain setting
 # first way: simple domain built in

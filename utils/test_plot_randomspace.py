@@ -7,25 +7,26 @@ import matplotlib.ticker as mtick
 loc = '/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/'
 dir = '_bins/'
 out_dir = '_results/'
-case = 'test2'
-name = 'eta'
+case = 'test4'
+name = 'v'
 model_file = case + '_bin_random_'+name+'1_surrogate_all_points_order_1.npy'
 truth_file = case + '_bin_random_'+name+'1_true_all_points_order_1.npy'
 a = np.load(loc + case + dir + model_file)
 b = np.load(loc + case + dir + truth_file)
 
-x1 = -1.2
-x2 = 1.2
-x3 = -2.0
-x4 = 2.0
-num = 20.0
-m = (x2 - x1)/num
-n = (x4 - x3)/num
+x1 = 0.9
+x2 = 1.1
+x3 = 0.9
+x4 = 1.1
+num = 10.0
+n_sample = 10.0
 
-for i in range(a.shape[2]):
+time_step = 500
+
+for i in range(time_step):
     fig, ax = plt.subplots()
-    X = np.linspace(x1, x2, num)
-    Y = np.linspace(x3, x4, num)
+    X = np.linspace(x1, x2, n_sample)
+    Y = np.linspace(x3, x4, n_sample)
     X, Y = np.meshgrid(X, Y)
     vmin = min(np.min(a[:, :, i, 0]), np.min(b[:, :, i, 0]))
     vmax = max(np.max(a[:, :, i, 0]), np.max(b[:, :, i, 0]))
@@ -54,6 +55,7 @@ for i in range(a.shape[2]):
     elif name == 'v':
         cbar.ax.set_title(r'$v_{model}, v_{truth}$')
     #plt.show()
+    plt.close()
     plt.savefig(loc + case + out_dir + name + '_display_surrogate_comparison_'+str(i)+'.png')
 
 
