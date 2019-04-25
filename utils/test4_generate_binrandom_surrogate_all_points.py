@@ -7,21 +7,22 @@ sys.path.insert(0, '/workspace/Documentation/Research_Doc/SFEM_Doc/7-SSWM-github
 from make_sto_basis import make_sto_basis 
 
 name = "test4"
-input_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"+name+"_stochastic/500_steps_060/"
+input_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"+name+"_stochastic/"
+#input_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"
 output_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"+name+"_bins/"
 mesh_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/7-SSWM-github/input/"
 mesh_file = "inlet_adh_sswm_finer.xml"
-u_file = "u_used_for_read_back_" + name + "_stochastic_finer_mesh_7_1_060_0"
-eta_file = "eta_used_for_read_back_" + name + "_stochastic_finer_mesh_7_1_060_0"
+u_file = "u_used_for_read_back_" + name + "_stochastic_"
+eta_file = "eta_used_for_read_back_" + name + "_stochastic_"
 
-n_sample = 10
+n_sample = 50 
 test_node_x = [-250.0, 0.0, 750.0]
 test_node_y = [0.0]
 
 dist_name = "uniform"
-sto_poly_deg = 1
-sto_poly_dim = 2
-coefficient = [0.9, 1.1, 0.9, 1.1]
+sto_poly_deg = 3 
+sto_poly_dim = 1
+coefficient = [1.0, 2.0]
 
 basis = make_sto_basis(dist_name, sto_poly_deg, sto_poly_dim, coefficient)
 orth = basis["basis"]
@@ -38,24 +39,34 @@ eta, eta_f, u, u_f = [], [], [], []
 for mode in range(n_modes):
     eta.append(Function(B))
     u.append(Function(C))
-    eta_input_file = eta_file + str(mode) + ".h5"
+    eta_input_file = eta_file + '{:02d}'.format(mode) + ".h5"
     eta_f.append(HDF5File(mesh.mpi_comm(), input_dir + eta_input_file, "r"))
-    u_input_file = u_file + str(mode) + ".h5"
+    u_input_file = u_file + '{:02d}'.format(mode) + ".h5"
     u_f.append(HDF5File(mesh.mpi_comm(), input_dir + u_input_file, "r"))
 
+
 test_nodes = [[a, b] for a in test_node_x for b in test_node_y]
-sample_x = np.linspace(coefficient[0], coefficient[1], num = n_sample)
-sample_y = np.linspace(coefficient[2], coefficient[3], num = n_sample)
-bin_random_u1 = np.zeros([n_sample, n_sample, time_step, len(test_nodes)])
-bin_random_v1 = np.zeros([n_sample, n_sample, time_step, len(test_nodes)])
-bin_random_eta1 = np.zeros([n_sample, n_sample, time_step, len(test_nodes)])
+if len(coefficient) == 4:
+    sample_x = np.linspace(coefficient[0], coefficient[1], num = n_sample)
+    sample_y = np.linspace(coefficient[2], coefficient[3], num = n_sample)
+    bin_random_u1 = np.zeros([n_sample, n_sample, time_step, len(test_nodes)])
+    bin_random_v1 = np.zeros([n_sample, n_sample, time_step, len(test_nodes)])
+    bin_random_eta1 = np.zeros([n_sample, n_sample, time_step, len(test_nodes)])
+elif len(coefficient) == 2:
+    sample_x = np.linspace(coefficient[0], coefficient[1], num = n_sample)
+    bin_random_u1 = np.zeros([n_sample, time_step, len(test_nodes)])
+    bin_random_v1 = np.zeros([n_sample, time_step, len(test_nodes)])
+    bin_random_eta1 = np.zeros([n_sample, time_step, len(test_nodes)])
 
 
 for i, q0 in enumerate(sample_x):
-    for j, q1 in enumerate(sample_y):
+#    for j, q1 in enumerate(sample_y):
         
-        print "start: q0 = " + str(round(q0, 2)) + "; q1 = " + str(round(q1, 2)) 
-        orth_list = [orth[mode](q0, q1) for mode in range(n_modes)]
+        #print "start: q0 = " + str(round(q0, 2)) + "; q1 = " + str(round(q1, 2)) 
+        print "start: q0 = " + str(round(q0, 2))
+
+        #orth_list = [orth[mode](q0, q1) for mode in range(n_modes)]
+        orth_list = [orth[mode](q0) for mode in range(n_modes)]
 
         for k in range(time_step):
 
@@ -71,9 +82,14 @@ for i, q0 in enumerate(sample_x):
                 v1_list = [u[p](test_nodes[l][0], test_nodes[l][1])[1] for p in range(n_modes)]
                 eta1_list = [eta[p](test_nodes[l][0], test_nodes[l][1]) for p in range(n_modes)]
 
-                bin_random_u1[i, j, k, l] = np.dot(orth_list, u1_list)
-                bin_random_v1[i, j, k, l] = np.dot(orth_list, v1_list)
-                bin_random_eta1[i, j, k, l] = np.dot(orth_list, eta1_list)
+                if len(coefficient) == 4:
+                    bin_random_u1[i, j, k, l] = np.dot(orth_list, u1_list)
+                    bin_random_v1[i, j, k, l] = np.dot(orth_list, v1_list)
+                    bin_random_eta1[i, j, k, l] = np.dot(orth_list, eta1_list)
+                elif len(coefficient) == 2:
+                    bin_random_u1[i, k, l] = np.dot(orth_list, u1_list)
+                    bin_random_v1[i, k, l] = np.dot(orth_list, v1_list)
+                    bin_random_eta1[i, k, l] = np.dot(orth_list, eta1_list)
 
 
 np.save(output_dir + name + "_bin_random_eta1_surrogate_all_points_order_1", bin_random_eta1)

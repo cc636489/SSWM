@@ -19,9 +19,9 @@ test_node_x = [25.0, 50.0, 75.0]
 test_node_y = [25.0]
 
 dist_name = "uniform"
-sto_poly_deg = 4
+sto_poly_deg = 3
 sto_poly_dim = 2
-coefficient = [-1.2, 1.2, -2, 2]
+coefficient = [0.8, 1.2, 1.0, 2.0]
 
 basis = make_sto_basis(dist_name, sto_poly_deg, sto_poly_dim, coefficient)
 orth = basis["basis"]

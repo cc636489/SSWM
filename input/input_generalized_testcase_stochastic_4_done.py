@@ -4,7 +4,7 @@
 # output file name string
 input_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/7-SSWM-github/input/"
 output_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"
-output_str = "test4_stochastic_finer_mesh_7_1_060_"
+output_str = "test4_stochastic_"
 bath_file = "inlet_adh_sswm_finer.nc"
 mesh_file = "inlet_adh_sswm_finer.xml"
 wind_file = ""
@@ -17,10 +17,10 @@ test_node_y = [0.]
 
 # stochastic basis
 dist_name = "uniform"  # "uniform"  or "gaussian"   ==> only enable "uniform" mode at present.
-sto_poly_deg = 1  # polynomial chaos order is 2.
+sto_poly_deg = 3  # polynomial chaos order is 2.
 # the dimension and coefficient should be paired and dim!=0  and coefficient!=Null
-sto_poly_dim = 2  # use "q0","q1","q2", ....
-coefficient = [0.9, 1.1, 0.9, 1.1]  # lower1/upper1--lower2/upper2--...
+sto_poly_dim = 1  # use "q0","q1","q2", ....
+coefficient = [1.0, 2.0]  # lower1/upper1--lower2/upper2--...
 
 # horizontal domain setting
 # first way: simple domain built in
@@ -30,8 +30,8 @@ domain = {"importfile": input_dir+mesh_file}
 
 # stochastic coefficient # if contains sin(), cos(), should use sympy sin and sympy cos!!!!!!!!!!
 sto_viscosity = "1e-6"
-sto_bottomDrag = "0.0015"
-sto_windDrag = "0.001 * q0 * q1"
+sto_bottomDrag = "0.0"
+sto_windDrag = "0.0"
 
 # terms control
 include_viscosity = True
@@ -39,23 +39,23 @@ include_convection = True
 linear_divergence = False
 include_les = True
 include_wind_stress = False
-include_const_wind = True
+include_const_wind = False 
 wind_x = 1.0
 wind_y = 0.0
-include_bottom_stress = True
+include_bottom_stress = False
 include_atmospheric_pressure = False
-include_supg = True
-include_crosswind = True
+include_supg = False
+include_crosswind = False
 include_auxiliary_viscosity = True
 include_interior_penalty = True
-les_parameters = {'smagorinsky_coefficient': 1.0}
+les_parameters = {'smagorinsky_coefficient': 0.3}
 DEBUG_mode = False
 USE_pvd = True
 USE_HDF5 = True
 USE_iterative = False
 
 # time parameter setting
-tidal_amplitude = 0.6   # "M2 special stochastic", should be "0.75*q0*q1"
+tidal_amplitude = "0.3*q0"   # "M2 special stochastic", should be "0.75*q0*q1"
 tidal_period = 12.41666*60*60
 start_time = 0.0
 end_time = 223500
@@ -97,7 +97,7 @@ bc_file = input_dir + boundary_file
 # boundary_u = {1: "no_slip", 2: "no_slip", 3: "no_slip"}
 boundary_u = {2: "free_slip_in_y"}
 # if inlet test case, boundary number should be 2;
-boundary_eta = {2: "M2 special"}
+boundary_eta = {2: "M2 special stochastic"}
 
 
 # second way:
@@ -105,4 +105,5 @@ boundary_eta = {2: "M2 special"}
 # boundary_u = {1: "free_slip_in_y", 2: "free_slip_in_y", 3: "free_slip_in_x", 4: "free_slip_in_x"}
 # include sin cos ==> should add sympy symbol!!!
 # boundary_eta = {}
+
 

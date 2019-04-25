@@ -16,7 +16,7 @@ n_sample = 20
 test_node_x = [25.0, 50.0, 75.0]
 test_node_y = [25.0]
 
-coefficient = [-1.2, 1.2, -2, 2]
+coefficient = [0.8, 1.2, 1.0, 2.0]
 
 time_step = 100
 

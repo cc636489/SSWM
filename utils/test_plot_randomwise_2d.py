@@ -7,21 +7,21 @@ import matplotlib.ticker as mtick
 loc = '/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/'
 dir = '_bins/'
 out_dir = '_results/'
-case = 'test4'
+case = 'test2'
 name = 'v'
 model_file = case + '_bin_random_'+name+'1_surrogate_all_points_order_1.npy'
 truth_file = case + '_bin_random_'+name+'1_true_all_points_order_1.npy'
 a = np.load(loc + case + dir + model_file)
 b = np.load(loc + case + dir + truth_file)
 
-x1 = 0.9
-x2 = 1.1
-x3 = 0.9
-x4 = 1.1
+x1 = 0.8
+x2 = 1.2
+x3 = 1.0
+x4 = 2.0
 num = 10.0
-n_sample = 10.0
+n_sample = 20
 
-time_step = 500
+time_step = 100
 
 for i in range(time_step):
     fig, ax = plt.subplots()
@@ -55,8 +55,8 @@ for i in range(time_step):
     elif name == 'v':
         cbar.ax.set_title(r'$v_{model}, v_{truth}$')
     #plt.show()
-    plt.close()
     plt.savefig(loc + case + out_dir + name + '_display_surrogate_comparison_'+str(i)+'.png')
+    plt.close()
 
 
 

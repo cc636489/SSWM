@@ -1,7 +1,8 @@
 
 
 from fenics import inner, grad, DOLFIN_EPS, dx, ds, dS, \
-    CellSize, div, dot, conditional, gt, FacetNormal, FacetArea, jump, Expression, pi, Constant, FacetFunction
+    CellSize, div, dot, conditional, gt, FacetNormal, FacetArea, jump, Expression, pi, Constant, FacetFunction, as_vector, \
+    avg
 # from fenics import *
 
 
@@ -112,14 +113,16 @@ class DetModelFormulate:
 
     def add_auxiliary_viscosity(self):
         """ add auxiliary viscosity term to tentative water velocity F_u_tent weak form. """
-        self.F_u_tent += 7 * self.u0_norm * self.h / 2.0 * self.initiate.nu_expression_object_list[0] * inner(
+        self.F_u_tent += 7.0 / 8.0 * self.u0_norm * self.h ** 2 * self.initiate.nu_expression_object_list[0] * inner(
             grad(self.initiate.v), grad(self.u_mean)) * dx
 
     def add_interior_penalty(self):
         """ Interior penalty method from OpenTidalFarm, if smooth, should be zeros """
         sigma = 1.0
-        self.F_u_tent += sigma * self.initiate.nu_expression_object_list[0] / self.h_edge * inner(
-            jump(grad(self.initiate.v), self.n), jump(grad(self.u_mean), self.n)) * dS
+        #self.F_u_tent += sigma * self.initiate.nu_expression_object_list[0] / self.h_edge * inner(
+        #    jump(grad(self.initiate.v), self.n), jump(grad(self.u_mean), self.n)) * dS
+        self.F_u_tent += (sigma * self.h_edge ** 2.0 * avg(abs(dot(self.u_bash, self.n))) * 
+                          inner(jump(grad(self.initiate.v), self.n), jump(grad(self.u_mean), self.n)) * dS)
 
     def add_bottom_stress(self):
         """ add bottom friction source term to tentative water velocity F_u_tent weak form. """
@@ -378,10 +381,10 @@ class StoModelFormulate:
             for j in range(self.initiate.n_modes):
                 for i in range(self.initiate.n_modes):
                     if abs(self.initiate.stoIJK[i][j][k]) > DOLFIN_EPS:
-                        self.F_u_tent += (7 * self.u0_norm * self.h / 2.0 * self.initiate.stoIJK[i][j][k] *
+                        self.F_u_tent += (7.0 / 8.0 * self.u0_norm * self.h ** 2 * self.initiate.stoIJK[i][j][k] *
                                           self.initiate.nu_expression_object_list[i] *
                                           inner(grad(self.initiate.v[2 * k]), grad(self.u_mean[2 * j])) * dx) + \
-                                         (7 * self.u0_norm * self.h / 2.0 * self.initiate.stoIJK[i][j][k] *
+                                         (7.0 / 8.0 * self.u0_norm * self.h ** 2 * self.initiate.stoIJK[i][j][k] *
                                           self.initiate.nu_expression_object_list[i] *
                                           inner(grad(self.initiate.v[2 * k + 1]), grad(self.u_mean[2 * j + 1])) * dx)
 
@@ -395,28 +398,29 @@ class StoModelFormulate:
 
     def add_interior_penalty(self):
         """ Interior penalty method from OpenTidalFarm, if smooth, should be zeros. """
+        sigma = 0.8
         for k in range(self.initiate.n_modes):
-            for j in range(self.initiate.n_modes):
-                for i in range(self.initiate.n_modes):
-                    if abs(self.initiate.stoIJK[i][j][k]) > DOLFIN_EPS:
-                        self.F_u_tent += (1.0 * self.initiate.nu_expression_object_list[i] / self.h_edge *
-                                          self.initiate.stoIJK[i][j][k] *
-                                          inner(jump(grad(self.initiate.v[2 * k]), self.n),
-                                                jump(grad(self.u_mean[2 * j]), self.n)) * dS) + \
-                                         (1.0 * self.initiate.nu_expression_object_list[i] / self.h_edge *
-                                          self.initiate.stoIJK[i][j][k] *
-                                          inner(jump(grad(self.initiate.v[2 * k + 1]), self.n),
-                                                jump(grad(self.u_mean[2 * j + 1]), self.n)) * dS)
+            #for j in range(self.initiate.n_modes):
+                #for i in range(self.initiate.n_modes):
+                    #if abs(self.initiate.stoIJK[i][j][k]) > DOLFIN_EPS:
+                        #self.F_u_tent += (sigma * self.initiate.nu_expression_object_list[i] / self.h_edge *
+                        #                  self.initiate.stoIJK[i][j][k] *
+                        #                  inner(jump(grad(self.initiate.v[2 * k]), self.n),
+                        #                        jump(grad(self.u_mean[2 * j]), self.n)) * dS) + \
+                        #                 (sigma * self.initiate.nu_expression_object_list[i] / self.h_edge *
+                        #                  self.initiate.stoIJK[i][j][k] *
+                        #                  inner(jump(grad(self.initiate.v[2 * k + 1]), self.n),
+                        #                        jump(grad(self.u_mean[2 * j + 1]), self.n)) * dS)
 
                         # TODO: Interior penalty method from yuxianglin's forwarded code, if smooth, should be zeros:
-                        # self.F_u_tent += (1.0 * self.h_edge ** 2.0 *
-                        #                   self.initiate.stoIJK[i][j][k] *
-                        #                   inner(jump(grad(self.initiate.v[2 * k]), self.n),
-                        #                         jump(grad(self.u_mean[2 * j]), self.n)) * dS) + \
-                        #                  (1.0 * self.h_edge ** 2.0 *
-                        #                   self.initiate.stoIJK[i][j][k] *
-                        #                   inner(jump(grad(self.initiate.v[2 * k + 1]), self.n),
-                        #                         jump(grad(self.u_mean[2 * j + 1]), self.n)) * dS)
+                         self.F_u_tent += (sigma * self.h_edge ** 2.0 * avg(abs(dot(as_vector([self.u_bash[0], 
+                                            self.u_bash[1]]), self.n))) * 
+                                           inner(jump(grad(self.initiate.v[2 * k]), self.n),
+                                                 jump(grad(self.u_mean[2 * k]), self.n)) * dS) + \
+                                          (sigma * self.h_edge ** 2.0 * avg(abs(dot(as_vector([self.u_bash[0], 
+                                            self.u_bash[1]]), self.n))) * 
+                                           inner(jump(grad(self.initiate.v[2 * k + 1]), self.n),
+                                                 jump(grad(self.u_mean[2 * k + 1]), self.n)) * dS)
 
     def add_bottom_stress(self):
         """ add bottom friction source term to tentative water velocity F_u_tent weak form. """

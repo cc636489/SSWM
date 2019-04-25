@@ -17,24 +17,30 @@ b = np.load(loc + case + dir + truth_file)
 t = np.load(loc + case + dir + time_file)
 t = [t[i]/3600.0/24.0 for i in range(len(t))]
 #import pdb;pdb.set_trace()
-x1 = 0.9
-x2 = 1.1
-x3 = 0.9
-x4 = 1.1
-n_sample = 10
+coefficient = [1.0, 2.0]
+n_sample = 50
 tick_num = 10
-sample_x = np.linspace(x1, x2, num = n_sample)
-sample_y = np.linspace(x3, x4, num = n_sample)
+if len(coefficient) == 4:
+    sample_x = np.linspace(coefficient[0], coefficient[1], num = n_sample)
+    sample_y = np.linspace(coefficient[2], coefficient[2], num = n_sample)
+elif len(coefficient) == 2:
+    sample_x = np.linspace(coefficient[0], coefficient[1], num = n_sample)
 
 for i, q0 in enumerate(sample_x):
-    for j, q1 in enumerate(sample_y):
+    #for j, q1 in enumerate(sample_y):
         fig, ax = plt.subplots()
         fig.set_size_inches(8, 6, forward = True)
-        ax.plot(t[:], a[i, j, :, 0], '-', label = 'model solution')
-        ax.plot(t[:], b[i, j, :, 0], 'x', label = 'true solution')
+        if len(coefficient) == 4:
+            ax.plot(t[:], a[i, j, :, 0], '-', label = 'model solution')
+            ax.plot(t[:], b[i, j, :, 0], 'x', label = 'true solution')
+            vmin = min(np.min(a[i, j, :, 0]), np.min(b[i, j, :, 0]))
+            vmax = max(np.max(a[i, j, :, 0]), np.max(b[i, j, :, 0]))
+        elif len(coefficient) == 2:
+            ax.plot(t[:], a[i, :, 0], '-', label = 'model solution')
+            ax.plot(t[:], b[i, :, 0], '-.', label = 'true solution')
+            vmin = min(np.min(a[i, :, 0]), np.min(b[i, :, 0]))
+            vmax = max(np.max(a[i, :, 0]), np.max(b[i, :, 0]))
         ax.legend(loc = "upper right")
-        vmin = min(np.min(a[i, j, :, 0]), np.min(b[i, j, :, 0]))
-        vmax = max(np.max(a[i, j, :, 0]), np.max(b[i, j, :, 0]))
         if vmin < 0:
             vmin = 1.2 * vmin
         else:
@@ -57,9 +63,12 @@ for i, q0 in enumerate(sample_x):
             plt.ylabel('x-direction Water Velocity:m/s')
         elif name == 'v':
             plt.ylabel('y-direction Water Velocity:m/s')
-        plt.title("Comparison over time at random point (" + str(round(q0, 2)) + " ," + str(round(q1, 2)) + ")")
+        if len(coefficient) == 4:
+            plt.title("Comparison over time at random point (" + str(round(q0, 2)) + " ," + str(round(q1, 2)) + ")")
+            plt.savefig(loc + case + out_dir + name + '_display_timeseries_comparison_' + str(round(q0, 2)) + '_' + str(round(q1, 2)) + '.png')
+        elif len(coefficient) == 2:
+            plt.title("Comparison over time at random point q0=" + str(round(q0, 2)))
+            plt.savefig(loc + case + out_dir + name + '_display_timeseries_comparison_' + str(round(q0, 2)) + '.png')
 
-        #plt.show()
         plt.close()
-        plt.savefig(loc + case + out_dir + name + '_display_timeseries_comparison_' + str(round(q0, 2)) + '_' + str(round(q1, 2)) + '.png')
  

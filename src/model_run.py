@@ -246,46 +246,46 @@ class ModelRun:
 
     def _run_initialize_bins(self):
         """ initialize arrays to save stochastic results. """
-        self.test_nodes = [[a, b] for a in self.inputs.test_node_x for b in self.inputs.test_node_y]
-        self.sample_x = np.linspace(self.inputs.coefficient[0], self.inputs.coefficient[1], self.inputs.n_sample)
-        self.sample_y = np.linspace(self.inputs.coefficient[2], self.inputs.coefficient[3], self.inputs.n_sample)
-        self.bin_random_u1 = np.zeros([self.inputs.n_sample, self.inputs.n_sample,
-                                       self.initiate.n_time_step + 1, len(self.test_nodes)])
-        self.bin_random_v1 = np.zeros([self.inputs.n_sample, self.inputs.n_sample,
-                                       self.initiate.n_time_step + 1, len(self.test_nodes)])
-        self.bin_random_eta1 = np.zeros([self.inputs.n_sample, self.inputs.n_sample,
-                                         self.initiate.n_time_step + 1, len(self.test_nodes)])
+        #self.test_nodes = [[a, b] for a in self.inputs.test_node_x for b in self.inputs.test_node_y]
+        #self.sample_x = np.linspace(self.inputs.coefficient[0], self.inputs.coefficient[1], self.inputs.n_sample)
+        #self.sample_y = np.linspace(self.inputs.coefficient[2], self.inputs.coefficient[3], self.inputs.n_sample)
+        #self.bin_random_u1 = np.zeros([self.inputs.n_sample, self.inputs.n_sample,
+        #                               self.initiate.n_time_step + 1, len(self.test_nodes)])
+        #self.bin_random_v1 = np.zeros([self.inputs.n_sample, self.inputs.n_sample,
+        #                               self.initiate.n_time_step + 1, len(self.test_nodes)])
+        #self.bin_random_eta1 = np.zeros([self.inputs.n_sample, self.inputs.n_sample,
+        #                                 self.initiate.n_time_step + 1, len(self.test_nodes)])
         if self.initiate.n_modes == 1:
             self.total_mass.append(assemble(self.initiate.H * dx))
         self.time_stamp.append(float(self.initiate.t))
 
     def _run_write_bins(self):
         """ write to array of stochastic results. """
-        for j in range(self.inputs.n_sample):
-            for k in range(self.inputs.n_sample):
-                ort_list = [self.initiate.ort_pol[mode](self.sample_x[j], self.sample_y[k])
-                            for mode in range(self.initiate.n_modes)]
-                for m in range(len(self.test_nodes)):
-                    u1_list = [self.initiate.u1(self.test_nodes[m][0], self.test_nodes[m][1])[2 * p]
-                               for p in range(self.initiate.n_modes)]
-                    v1_list = [self.initiate.u1(self.test_nodes[m][0], self.test_nodes[m][1])[2 * p + 1]
-                               for p in range(self.initiate.n_modes)]
-                    self.bin_random_u1[j, k, self.time_step_count, m] = np.dot(ort_list, u1_list)
-                    self.bin_random_v1[j, k, self.time_step_count, m] = np.dot(ort_list, v1_list)
-                    self.bin_random_eta1[j, k, self.time_step_count, m] = \
-                        np.dot(ort_list, self.initiate.eta1(self.test_nodes[m][0], self.test_nodes[m][1]))
+        #for j in range(self.inputs.n_sample):
+        #    for k in range(self.inputs.n_sample):
+        #        ort_list = [self.initiate.ort_pol[mode](self.sample_x[j], self.sample_y[k])
+        #                    for mode in range(self.initiate.n_modes)]
+        #        for m in range(len(self.test_nodes)):
+        #            u1_list = [self.initiate.u1(self.test_nodes[m][0], self.test_nodes[m][1])[2 * p]
+        #                       for p in range(self.initiate.n_modes)]
+        #            v1_list = [self.initiate.u1(self.test_nodes[m][0], self.test_nodes[m][1])[2 * p + 1]
+        #                       for p in range(self.initiate.n_modes)]
+        #            self.bin_random_u1[j, k, self.time_step_count, m] = np.dot(ort_list, u1_list)
+        #            self.bin_random_v1[j, k, self.time_step_count, m] = np.dot(ort_list, v1_list)
+        #            self.bin_random_eta1[j, k, self.time_step_count, m] = \
+        #                np.dot(ort_list, self.initiate.eta1(self.test_nodes[m][0], self.test_nodes[m][1]))
         if self.initiate.n_modes == 1:
             self.total_mass.append(assemble(self.initiate.H * dx))
         self.time_stamp.append(float(self.initiate.t))
 
     def _run_save_bin(self):
         """ save to file of the arrays. """
-        np.save(self.inputs.output_dir + "bin_random_eta1_all_points_order_" + str(self.inputs.sto_poly_deg),
-                self.bin_random_eta1)
-        np.save(self.inputs.output_dir + "bin_random_u1_all_points_order_" + str(self.inputs.sto_poly_deg),
-                self.bin_random_u1)
-        np.save(self.inputs.output_dir + "bin_random_v1_all_points_order_" + str(self.inputs.sto_poly_deg),
-                self.bin_random_v1)
+        #np.save(self.inputs.output_dir + "bin_random_eta1_all_points_order_" + str(self.inputs.sto_poly_deg),
+        #        self.bin_random_eta1)
+        #np.save(self.inputs.output_dir + "bin_random_u1_all_points_order_" + str(self.inputs.sto_poly_deg),
+        #        self.bin_random_u1)
+        #np.save(self.inputs.output_dir + "bin_random_v1_all_points_order_" + str(self.inputs.sto_poly_deg),
+        #        self.bin_random_v1)
         np.save(self.inputs.output_dir + "total_mass_at_every_time_step", self.total_mass)
         np.save(self.inputs.output_dir + "time_stamp_at_every_time_step", self.time_stamp)
 

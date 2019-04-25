@@ -4,17 +4,14 @@ import matplotlib.pyplot as plt
 from fenics import *
 
 
-name = "test2"
-#input_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"+name+"_stochastic/500_steps_060/"
-input_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"+name+"_stochastic/"
-output_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"+name+\
-             "_results/"
-time_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"+name+\
-           "_bins/"
+name = "test4"
+#input_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"+name+"_stochastic/"
+input_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"
+output_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"+name+"_results/"
+#time_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"+name+"_bins/"
+time_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"
 mesh_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/7-SSWM-github/input/"
-#mesh_file = "inlet_adh_sswm_finer.xml"
-#mean_u_file = "u_used_for_read_back_" + name + "_stochastic_finer_mesh_7_1_060_00.h5"
-#mean_eta_file = "eta_used_for_read_back_" + name + "_stochastic_finer_mesh_7_1_060_00.h5"
+mesh_file = "inlet_adh_sswm_finer.xml"
 mean_u_file = "u_used_for_read_back_" + name + "_stochastic_00.h5"
 mean_eta_file = "eta_used_for_read_back_" + name + "_stochastic_00.h5"
 time_file = "time_stamp_at_every_time_step.npy"
@@ -22,16 +19,16 @@ variance_eta_file = "eta_used_for_read_back_variance_in_domain.h5"
 variance_u_file = "u_used_for_read_back_variance_in_domain.h5"
 variance_v_file = "v_used_for_read_back_variance_in_domain.h5"
 
-test_node_x = [25.0, 50.0, 75.0]
-test_node_y = [25.0]
+test_node_x = [-250.0, 0.0, 750.0]
+test_node_y = [0.0]
 
-time_step = 100
+time_step = 500
 time = np.load(time_dir + time_file)
-#time[:] = time[:]/3600/24
-time = time[:-1]
+time[:] = time[:]/3600/24
+#time = time[:-1]
 
-#mesh = Mesh(mesh_dir + mesh_file)
-mesh = RectangleMesh(Point(0, 0), Point(100, 50), 20, 10)
+mesh = Mesh(mesh_dir + mesh_file)
+#mesh = RectangleMesh(Point(0, 0), Point(100, 50), 20, 10)
 B = FunctionSpace(mesh, "CG", 1)
 C = VectorFunctionSpace(mesh, "CG", 2, dim=2)
 D = FunctionSpace(mesh, "CG", 2)
@@ -140,7 +137,7 @@ for k, [field_mean, field_var] in enumerate([[plot_eta_mean, plot_eta_var], [plo
         else:
             print min(field_mean[:, i] - field_var[:, i]), max(field_mean[:, i] + field_var[:, i])
             plt.ylim([min(field_mean[:, i] - field_var[:, i]) * 0.8, max(field_mean[:, i] + field_var[:, i]) * 0.8])
-        plt.xlabel('time:sec')
+        plt.xlabel('time:day')
         if k == 0:
             plt.ylabel('Surface Elevation:m')
             plt.title('Mean and variance of surface elevation at physical point (' + str(test_nodes[i][0]) + ', ' +

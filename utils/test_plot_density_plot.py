@@ -10,35 +10,32 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import matplotlib.ticker as mtick
 
-name = "test2"
-# input_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"+name+"_stochastic/500_steps_060/"
+name = "test4"
 input_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"+name+"_stochastic/"
 output_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"+name+"_results/"
 mesh_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/7-SSWM-github/input/"
-#mesh_file = "inlet_adh_sswm_finer.xml"
-#u_file = "u_used_for_read_back_" + name + "_stochastic_finer_mesh_7_1_060_0"
-#eta_file = "eta_used_for_read_back_" + name + "_stochastic_finer_mesh_7_1_060_0"
+mesh_file = "inlet_adh_sswm_finer.xml"
 u_file = "u_used_for_read_back_" + name + "_stochastic_"
 eta_file = "eta_used_for_read_back_" + name + "_stochastic_"
 
 n_sample = 1000
-test_node_x = [25.0, 50.0, 75.0]
-test_node_y = [25.0]
+test_node_x = [-250.0, 0.0, 750.0]
+test_node_y = [0.0]
 
 dist_name = "uniform"
-sto_poly_deg = 4
-sto_poly_dim = 2
-coefficient = [-1.2, 1.2, -2.0, 2.0]
+sto_poly_deg = 3
+sto_poly_dim = 1
+coefficient = [1.0, 2.0]
 
 basis = make_sto_basis(dist_name, sto_poly_deg, sto_poly_dim, coefficient)
 orth = basis["basis"]
 JointCDF = basis.get("joint_cdf")
 n_modes = basis["n_modes"]
 
-time_step = 100
+time_step = 500
 
-#mesh = Mesh(mesh_dir + mesh_file)
-mesh = RectangleMesh(Point(0, 0), Point(100, 50), 20, 10)
+mesh = Mesh(mesh_dir + mesh_file)
+#mesh = RectangleMesh(Point(0, 0), Point(100, 50), 20, 10)
 B = FunctionSpace(mesh, "CG", 1)
 C = VectorFunctionSpace(mesh, "CG", 2, dim=2)
 
@@ -75,7 +72,10 @@ for k in range(time_step):
 
         u_random_output, v_random_output, eta_random_output = [], [], []
         for m in range(n_sample):
-            orth_list = [orth[mode](samples[0][m], samples[1][m]) for mode in range(n_modes)]
+            if len(coefficient) == 4:
+                orth_list = [orth[mode](samples[0][m], samples[1][m]) for mode in range(n_modes)]
+            elif len(coefficient) == 2:
+                orth_list = [orth[mode](samples[m]) for mode in range(n_modes)]
             u_random_output.append(np.dot(orth_list, u1_list))
             v_random_output.append(np.dot(orth_list, v1_list))
             eta_random_output.append(np.dot(orth_list, eta1_list))
