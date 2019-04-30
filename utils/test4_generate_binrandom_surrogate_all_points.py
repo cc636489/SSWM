@@ -12,8 +12,8 @@ input_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tes
 output_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"+name+"_bins/"
 mesh_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/7-SSWM-github/input/"
 mesh_file = "inlet_adh_sswm_finer.xml"
-u_file = "u_used_for_read_back_" + name + "_stochastic_"
-eta_file = "eta_used_for_read_back_" + name + "_stochastic_"
+u_file = "u_used_for_read_back_" + name + "_stochastic_0.2_0.75_0.13les_"
+eta_file = "eta_used_for_read_back_" + name + "_stochastic_0.2_0.75_0.13les_"
 
 n_sample = 50 
 test_node_x = [-250.0, 0.0, 750.0]

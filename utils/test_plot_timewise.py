@@ -8,7 +8,7 @@ loc = '/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/reg
 dir = '_bins/'
 out_dir = '_results/'
 case = 'test4'
-name = 'v'
+name = 'u'
 model_file = case + '_bin_random_'+name+'1_surrogate_all_points_order_1.npy'
 truth_file = case + '_bin_random_'+name+'1_true_all_points_order_1.npy'
 time_file = 'time_stamp_at_every_time_step.npy'
@@ -37,7 +37,7 @@ for i, q0 in enumerate(sample_x):
             vmax = max(np.max(a[i, j, :, 0]), np.max(b[i, j, :, 0]))
         elif len(coefficient) == 2:
             ax.plot(t[:], a[i, :, 0], '-', label = 'model solution')
-            ax.plot(t[:], b[i, :, 0], '-.', label = 'true solution')
+            ax.plot(t[:], b[i, :, 0], 'x', label = 'true solution')
             vmin = min(np.min(a[i, :, 0]), np.min(b[i, :, 0]))
             vmax = max(np.max(a[i, :, 0]), np.max(b[i, :, 0]))
         ax.legend(loc = "upper right")

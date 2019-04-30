@@ -18,9 +18,9 @@ for q0 in np.linspace(1.0, 2.0, num = 50):
         subprocess.call(["sed -i 's/sto_poly_deg = 3/sto_poly_deg = 0/' " + output_dir1 + output_dir2 + output_file], shell = True)
         #string = str(0.001 * q0 * q1)
         #print "sto_windDrag = " + string
-        string = str(0.3 * q0)
+        string = str(0.2 * q0)
         print "tidal_amplitude = " + string
         #subprocess.call(["sed -i 's/sto_windDrag = \"0.001 \\* q0 \\* q1\"/sto_windDrag = \"" + string + "\"/' " + output_dir1 + output_dir2 + output_file], shell = True)
-        subprocess.call(["sed -i 's/tidal_amplitude = \"0.3\\*q0\"/tidal_amplitude = " + string + "/g' " + output_dir1 + output_dir2 + output_file], shell = True)
+        subprocess.call(["sed -i 's/tidal_amplitude = \"0.2\\*q0\"/tidal_amplitude = " + string + "/g' " + output_dir1 + output_dir2 + output_file], shell = True)
         subprocess.call(["sed -i 's/M2 special stochastic/M2 special/g' " + output_dir1 + output_dir2 + output_file], shell = True)
 

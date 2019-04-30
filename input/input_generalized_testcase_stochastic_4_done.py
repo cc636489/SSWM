@@ -48,14 +48,14 @@ include_supg = False
 include_crosswind = False
 include_auxiliary_viscosity = True
 include_interior_penalty = True
-les_parameters = {'smagorinsky_coefficient': 0.3}
+les_parameters = {'smagorinsky_coefficient': 0.13}
 DEBUG_mode = False
 USE_pvd = True
 USE_HDF5 = True
 USE_iterative = False
 
 # time parameter setting
-tidal_amplitude = "0.3*q0"   # "M2 special stochastic", should be "0.75*q0*q1"
+tidal_amplitude = "0.2*q0"   # "M2 special stochastic", should be "0.75*q0*q1"
 tidal_period = 12.41666*60*60
 start_time = 0.0
 end_time = 223500
