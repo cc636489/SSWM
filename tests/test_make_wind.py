@@ -1,9 +1,13 @@
 
 
+import sys
+sys.path.insert(0, '/workspace/Documentation/Research_Doc/SFEM_Doc/7-SSWM-github/src')
+sys.path.insert(0, '/workspace/Documentation/Research_Doc/SFEM_Doc/7-SSWM-github/input')
+
 import unittest
-from src.make_wind import MakeWind
-from src.model_read_input import ModelReadInput
-from fenics import Mesh, FunctionSpace, Expression
+from make_wind import MakeWind
+from model_read_input import ModelReadInput
+from fenics import Mesh, FunctionSpace, Expression, XDMFFile, project, Function
 from netCDF4 import Dataset
 import numpy as np
 
@@ -15,7 +19,12 @@ class MakeMeshTestCase(unittest.TestCase):
 
     def test_wind(self):
 
-        days = 0.125
+        # now we can update the wind speed in every time step.
+        days = 2.58 
+        curr_time = 0
+        final_time = 3600 * 24 * days
+        dt = 447
+
 
         this_mesh = Mesh(self.inputs.input_dir + self.inputs.mesh_file)
         this_scalar_space = FunctionSpace(this_mesh, "CG", 1)
@@ -113,6 +122,7 @@ class MakeMeshTestCase(unittest.TestCase):
         # create a list for wind_para_x, wind_para_y.
         wind_para_x = Expression(cppcode=code, element=this_scalar_space.ufl_element())
         wind_para_y = Expression(cppcode=code, element=this_scalar_space.ufl_element())
+        wdrag = Expression(cppcode=code, element=this_scalar_space.ufl_element())
 
         # read in variables.
         nc = Dataset(self.inputs.input_dir + self.inputs.bath_file, 'r', format='NETCDF4')
@@ -120,42 +130,52 @@ class MakeMeshTestCase(unittest.TestCase):
         y_coord = nc.variables['y_coord'][:].data.tolist()
         x_deg = nc.variables['lon'][:].data.tolist()
         y_deg = nc.variables['lat'][:].data.tolist()
-        bath_y = nc.variables['bathy'][:].data.tolist()
 
         # initialize a list for wind_para_x, wind_para_y.
         for st in range(len(x_coord)):
-            wind_para_x.initial(x_coord[st], y_coord[st], bath_y[st])
-            wind_para_y.initial(x_coord[st], y_coord[st], bath_y[st])
-
-        # now we can update the wind speed in every time step.
-        curr_time = 0
-        final_time = 3600 * 24 * days
-        dt = 3600
+            wind_para_x.initial(x_coord[st], y_coord[st], 0.0)
+            wind_para_y.initial(x_coord[st], y_coord[st], 0.0)
+            wdrag.initial(x_coord[st], y_coord[st], 0.00075)
 
         wind = MakeWind(self.inputs)
         wind_x_max = []
         wind_y_max = []
+        wdrag_max = []
+
+        f = XDMFFile("wind_drag_test.pvd")
+        drag_func = Function(this_scalar_space, name="drag")
 
         while curr_time <= final_time:
 
             wind.get_prepared(current_time=curr_time)
             wind_para_x_list = []
             wind_para_y_list = []
+            wind_drag_list = []
             for t in range(len(x_deg)):
                 wind_x, wind_y, pressure = wind.get_wind_x_wind_y(x_coord_deg=x_deg[t], y_coord_deg=y_deg[t])
                 wind_para_x_list.append(wind_x)
                 wind_para_y_list.append(wind_y)
+                wind_drag = wind.get_wind_drag(x_coord_deg=x_deg[t], y_coord_deg=y_deg[t])
+                wind_drag_list.append(wind_drag)
 
             wind_x_max.append(np.max(wind_para_x_list))
             wind_y_max.append(np.max(wind_para_y_list))
+            wdrag_max.append(np.max(wind_drag_list))
 
             for sm in range(len(x_coord)):
                 wind_para_x.update(x_coord[sm], y_coord[sm], wind_para_x_list[sm])
                 wind_para_y.update(x_coord[sm], y_coord[sm], wind_para_y_list[sm])
+                wdrag.update(x_coord[sm], y_coord[sm], wind_drag_list[sm])
+
+            # save wdrag to file.
+            
+            drag_func.assign(project(wdrag, this_scalar_space))
+            f << (drag_func, float(curr_time))
 
             # update current time
             print curr_time/dt
             curr_time += dt
+
 
         self.assertTrue(1)
 

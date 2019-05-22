@@ -155,11 +155,13 @@ class ModelInitiate:
         self.wind_para_x = None
         self.wind_para_y = None
         self.pressure = None
+        self.wdrag = None
         self.x_coord = None
         self.y_coord = None
         self.x_deg = None
         self.y_deg = None
         self.wind_vector = None
+        self.wind_drag = None
 
         self.windDrag_expression_object_list = []
         self.bottomDrag_expression_object_list = []
@@ -214,6 +216,7 @@ class ModelInitiate:
         # self.write_u1 = Function(self.C, name="u_modes")
         # self.write_eta1 = Function(self.B, name="eta_modes")
         self.wind_vector = Function(self.C, name="wind_xy")
+        self.wind_drag = Function(self.B, name="wind_drag")
 
     def make_bath(self):
         """ build up bathymetry object which is compatible with Fenics. """
@@ -348,8 +351,17 @@ class ModelInitiate:
             self.wind_para_x.initial(self.x_coord[st], self.y_coord[st], 0.0)
             self.wind_para_y.initial(self.x_coord[st], self.y_coord[st], 0.0)
             self.pressure.initial(self.x_coord[st], self.y_coord[st], 1013.0)
-        # self.wind = MakeWind(self.inputs.input_dir + self.inputs.wind_file, self.inputs.wind_dt)
         self.wind = MakeWind(self.inputs)
+
+        if self.inputs.wind_scheme == "powell":
+            self.wdrag = Expression(cppcode=code, element=self.B.ufl_element(), domain=self.mesh)
+            for st in range(len(self.x_coord)):
+                self.wdrag.initial(self.x_coord[st], self.y_coord[st], 0.00075)
+        elif self.inputs.wind_scheme == "garratt":
+            self.wdrag = 0.001 * (0.75 + 40. / 600. * sqrt(self.wind_para_x ** 2 + self.wind_para_y ** 2))
+        else:
+            print "not implement this wind drag coefficient scheme yet."
+
 
     def make_const_wind(self):
         if self.inputs.wind_x < 1e-6:

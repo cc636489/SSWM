@@ -35,6 +35,13 @@ class MakeWind:
         self.delta_press = 0.
         self.ts = 0.
         self.bb = 0.
+        self.wind_speed_x = 0.
+        self.wind_speed_y = 0.
+        self.pressure = 0.
+        self.aux = []
+        self.aux_norm = 0.
+        self.deltax = 0.
+        self.wvel = 0.
 
         self._get_wind_p1()
         self._get_wind_p2()
@@ -103,6 +110,11 @@ class MakeWind:
         if self.bb > 2.5:
             self.bb = 2.5
 
+        # get auxiliary point for wind drag theta calculation
+        self.deltax = - self.tvy_curr / self.tvx_curr
+        self.aux = [-1.0, self.deltax]
+        self.aux_norm = sqrt(self.aux[0] ** 2. + self.aux[1] ** 2.)
+
     def get_wind_x_wind_y(self, x_coord_deg, y_coord_deg):
         # get relative distance from hurricane eye.
         dx_rad = (x_coord_deg - self.lon_curr) * self.inputs.DEG2RAD
@@ -133,4 +145,94 @@ class MakeWind:
         wind_speed_x = wind_speed_x + trans_spd_x
         wind_speed_y = wind_speed_y + trans_spd_y
 
+        self.wind_speed_x = wind_speed_x
+        self.wind_speed_y = wind_speed_y
+        self.wvel = sqrt(self.wind_speed_x ** 2 + self.wind_speed_y ** 2)
+        self.pressure = pressure
+
         return wind_speed_x, wind_speed_y, pressure
+
+    def get_wind_drag(self, x_coord_deg, y_coord_deg):
+        # determine which sector it is.
+        cen = [x_coord_deg - self.lon_curr, y_coord_deg - self.lat_curr]
+        cen_norm = sqrt(cen[0] ** 2 + cen[1] ** 2)
+        if cen_norm != 0:
+            theta = np.degrees(np.arccos(np.dot(self.aux, cen) / self.aux_norm / cen_norm))
+        else:
+            theta = 0.0
+
+        # determin which sector it is.
+        sector = None
+        if (self.deltax >= 0 and y_coord_deg + self.deltax * x_coord_deg >= self.lat_curr + self.deltax * self.lon_curr) \
+            or (self.deltax < 0 and y_coord_deg + self.deltax * x_coord_deg <= self.lat_curr + self.deltax * self.lon_curr):
+            if 0. <= theta < 20.:
+                sector = "left"
+            elif 20. <= theta < 150.:
+                sector = "right"
+            else:
+                sector = "rear"
+        else:
+            if 0. <= theta < 120.:
+                sector = "left"
+            else:
+                sector = "rear"
+
+        # determine the wind drag point by point.
+        if 0. <= self.wvel <= 18.:
+            wdrag = 0.001 * (0.75 + 40. / 600. * self.wvel)
+        else:
+            if sector == "left":
+                if 18. < self.wvel <= 25.:
+                    wdrag = 0.0018
+                elif 25. < self.wvel <= 30.:
+                    wdrag = 0.00054 * self.wvel - 0.0117
+                elif 30. < self.wvel <= 45:
+                    wdrag = -0.0035 / 15. * self.wvel + 0.0115
+                elif self.wvel > 45.:
+                    wdrag = 0.001
+            elif sector == "right":
+                if 18. < self.wvel <= 18.7:
+                    wdrag = 0.001 * (0.75 + 40. / 600. * self.wvel)
+                elif 18.7 < self.wvel <= 35.:
+                    wdrag = 0.002
+                elif 35. < self.wvel <= 45.:
+                    wdrag = 0.0001 * self.wvel - 0.0015
+                elif self.wvel > 45.:
+                    wdrag = 0.003
+            elif sector == "rear":
+                if 18. < self.wvel <= 18.7:
+                    wdrag = 0.001 * (0.75 + 40. / 600. * self.wvel)
+                elif 18.7 < self.wvel <= 35.:
+                    wdrag = 0.002
+                elif 35. < self.wvel <= 45.:
+                    wdrag = -0.0001 * self.wvel + 0.0055
+                elif self.wvel > 45.:
+                    wdrag = 0.001
+
+        return wdrag
+
+
+
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

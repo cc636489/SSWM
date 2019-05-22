@@ -1,11 +1,9 @@
 
 
 from fenics import lhs, rhs, assemble, LUSolver, KrylovSolver, File, \
-                   XDMFFile, dx, solve, Constant, project, as_vector
-# from dolfin import *
+                   XDMFFile, HDF5File, dx, solve, Constant, project, as_vector, set_log_level
 import numpy as np
-from fenics import HDF5File
-
+set_log_level(30)
 
 class ModelRun:
     """
@@ -82,9 +80,11 @@ class ModelRun:
         self.u_file = []
         self.eta_file = []
         self.wind_xy_output_file = []
+        self.wind_drag_output_file = []
         self.u_used_for_read_back = []
         self.eta_used_for_read_back = []
         self.wind_xy_used_for_read_back = []
+        self.wind_drag_used_for_read_back = []
 
         self.test_nodes = None
         self.sample_x = None
@@ -139,11 +139,11 @@ class ModelRun:
 
             self._update_boundary()
 
-            if self.inputs.include_wind_stress:
-                print "Compute wind stress."
+            if self.inputs.include_wind_stress or self.inputs.include_atmospheric_pressure:
+                print "Compute wind stress, pressure and wind drag coefficient."
                 self._update_wind()
 
-            if self.inputs.include_const_wind or self.inputs.include_atmospheric_pressure:
+            if self.inputs.include_const_wind:
                 pass
 
             if self.inputs.include_les:
@@ -167,6 +167,7 @@ class ModelRun:
             self._run_write_file()
             self._run_write_bins()
 
+            #import pdb;pdb.set_trace()
             self._update_time()
 
     def run_final(self):
@@ -200,12 +201,19 @@ class ModelRun:
             if self.inputs.USE_pvd:
                 self.wind_xy_output_file.append(File(self.inputs.output_dir + "wind_vel_" +
                                                      self.inputs.output_str + "0.pvd"))
+                self.wind_drag_output_file.append(File(self.inputs.output_dir + "wind_drag_" +
+                                                     self.inputs.output_str + "0.pvd"))
             else:
                 self.wind_xy_output_file.append(XDMFFile(self.inputs.output_dir + "wind_vel_" +
+                                                         self.inputs.output_str + "0.xdmf"))
+                self.wind_drag_output_file.append(XDMFFile(self.inputs.output_dir + "wind_drag_" +
                                                          self.inputs.output_str + "0.xdmf"))
             if self.inputs.USE_HDF5:
                 self.wind_xy_used_for_read_back.append(HDF5File(self.initiate.mesh.mpi_comm(), self.inputs.output_dir +
                                                                 "wind_used_for_read_back_" + self.inputs.output_str +
+                                                                "0.h5", "w"))
+                self.wind_drag_used_for_read_back.append(HDF5File(self.initiate.mesh.mpi_comm(), self.inputs.output_dir +
+                                                                "wind_drag_used_for_read_back_" + self.inputs.output_str +
                                                                 "0.h5", "w"))
 
     def _run_write_file(self):
@@ -237,55 +245,31 @@ class ModelRun:
         if self.inputs.include_wind_stress:
             self.initiate.wind_vector.assign(project(as_vector([self.initiate.wind_para_x, self.initiate.wind_para_y]),
                                                      self.initiate.C))
+            self.initiate.wind_drag.assign(project(self.initiate.wdrag, self.initiate.B))
             if self.inputs.USE_pvd:
                 self.wind_xy_output_file[0] << (self.initiate.wind_vector, float(self.initiate.t))
+                self.wind_drag_output_file[0] << (self.initiate.wind_drag, float(self.initiate.t))
             else:
                 self.wind_xy_output_file[0].write(self.initiate.wind_vector, float(self.initiate.t))
+                self.wind_drag_output_file[0].write(self.initiate.wind_drag, float(self.initiate.t))
             if self.inputs.USE_HDF5:
                 self.wind_xy_used_for_read_back[0].write(self.initiate.wind_vector, "WindSpeed", float(self.initiate.t))
+                self.wind_drag_used_for_read_back[0].write(self.initiate.wind_drag, "WindDrag", float(self.initiate.t))
 
     def _run_initialize_bins(self):
         """ initialize arrays to save stochastic results. """
-        #self.test_nodes = [[a, b] for a in self.inputs.test_node_x for b in self.inputs.test_node_y]
-        #self.sample_x = np.linspace(self.inputs.coefficient[0], self.inputs.coefficient[1], self.inputs.n_sample)
-        #self.sample_y = np.linspace(self.inputs.coefficient[2], self.inputs.coefficient[3], self.inputs.n_sample)
-        #self.bin_random_u1 = np.zeros([self.inputs.n_sample, self.inputs.n_sample,
-        #                               self.initiate.n_time_step + 1, len(self.test_nodes)])
-        #self.bin_random_v1 = np.zeros([self.inputs.n_sample, self.inputs.n_sample,
-        #                               self.initiate.n_time_step + 1, len(self.test_nodes)])
-        #self.bin_random_eta1 = np.zeros([self.inputs.n_sample, self.inputs.n_sample,
-        #                                 self.initiate.n_time_step + 1, len(self.test_nodes)])
         if self.initiate.n_modes == 1:
             self.total_mass.append(assemble(self.initiate.H * dx))
         self.time_stamp.append(float(self.initiate.t))
 
     def _run_write_bins(self):
         """ write to array of stochastic results. """
-        #for j in range(self.inputs.n_sample):
-        #    for k in range(self.inputs.n_sample):
-        #        ort_list = [self.initiate.ort_pol[mode](self.sample_x[j], self.sample_y[k])
-        #                    for mode in range(self.initiate.n_modes)]
-        #        for m in range(len(self.test_nodes)):
-        #            u1_list = [self.initiate.u1(self.test_nodes[m][0], self.test_nodes[m][1])[2 * p]
-        #                       for p in range(self.initiate.n_modes)]
-        #            v1_list = [self.initiate.u1(self.test_nodes[m][0], self.test_nodes[m][1])[2 * p + 1]
-        #                       for p in range(self.initiate.n_modes)]
-        #            self.bin_random_u1[j, k, self.time_step_count, m] = np.dot(ort_list, u1_list)
-        #            self.bin_random_v1[j, k, self.time_step_count, m] = np.dot(ort_list, v1_list)
-        #            self.bin_random_eta1[j, k, self.time_step_count, m] = \
-        #                np.dot(ort_list, self.initiate.eta1(self.test_nodes[m][0], self.test_nodes[m][1]))
         if self.initiate.n_modes == 1:
             self.total_mass.append(assemble(self.initiate.H * dx))
         self.time_stamp.append(float(self.initiate.t))
 
     def _run_save_bin(self):
         """ save to file of the arrays. """
-        #np.save(self.inputs.output_dir + "bin_random_eta1_all_points_order_" + str(self.inputs.sto_poly_deg),
-        #        self.bin_random_eta1)
-        #np.save(self.inputs.output_dir + "bin_random_u1_all_points_order_" + str(self.inputs.sto_poly_deg),
-        #        self.bin_random_u1)
-        #np.save(self.inputs.output_dir + "bin_random_v1_all_points_order_" + str(self.inputs.sto_poly_deg),
-        #        self.bin_random_v1)
         np.save(self.inputs.output_dir + "total_mass_at_every_time_step", self.total_mass)
         np.save(self.inputs.output_dir + "time_stamp_at_every_time_step", self.time_stamp)
 
@@ -307,16 +291,24 @@ class ModelRun:
         wind_para_x_list = []
         wind_para_y_list = []
         pressure_list = []
+        if self.inputs.wind_scheme == "powell":
+            wdrag_list = []
         for ts in range(len(self.initiate.x_deg)):
             wind_x, wind_y, press = self.initiate.wind.get_wind_x_wind_y(
-                x_coord_deg=self.initiate.x_deg[ts], y_coord_deg=self.initiate.y_deg[ts])
+                    x_coord_deg=self.initiate.x_deg[ts], y_coord_deg=self.initiate.y_deg[ts])
             wind_para_x_list.append(wind_x)
             wind_para_y_list.append(wind_y)
             pressure_list.append(press)
+            if self.inputs.wind_scheme == "powell":
+                drag = self.initiate.wind.get_wind_drag(x_coord_deg=self.initiate.x_deg[ts], 
+                                                        y_coord_deg=self.initiate.y_deg[ts])
+                wdrag_list.append(drag)
         for sm in range(len(self.initiate.x_coord)):
             self.initiate.wind_para_x.update(self.initiate.x_coord[sm], self.initiate.y_coord[sm], wind_para_x_list[sm])
             self.initiate.wind_para_y.update(self.initiate.x_coord[sm], self.initiate.y_coord[sm], wind_para_y_list[sm])
             self.initiate.pressure.update(self.initiate.x_coord[sm], self.initiate.y_coord[sm], pressure_list[sm])
+            if self.inputs.wind_scheme == "powell":
+                self.initiate.wdrag.update(self.initiate.x_coord[sm], self.initiate.y_coord[sm], wdrag_list[sm])
 
     def _update_les(self):
         """ update eddy viscosity field. """

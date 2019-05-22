@@ -6,17 +6,19 @@ import sys
 sys.path.insert(0, '/workspace/Documentation/Research_Doc/SFEM_Doc/7-SSWM-github/src')
 from make_sto_basis import make_sto_basis 
 
-name = "test3"
+name = "IKE"
 input_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"+name+"_stochastic/"
 output_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"+name+"_bins/"
 mesh_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/7-SSWM-github/input/"
-#mesh_file = "hump_adcirc_sswm.xml"
+mesh_file = "Gulf_wind.xml"
 u_file = "u_used_for_read_back_"+name+"_stochastic_0"
 eta_file = "eta_used_for_read_back_"+name+"_stochastic_0"
 
-n_sample = 20
-test_node_x = [500.0, 750.0, 250.0]
-test_node_y = [100.0]
+n_sample = 50
+test_node_x = [3.2375397324999998e+05, 4.0413550053600001e+05, 6.5208921350399998e+05]
+test_node_y = [3.2675570484799999e+06, 3.3039835199199999e+06, 3.2880523029299998e+06]
+test_node_str = ["8771341", "8768094", "8764227"]
+test_node_str_node_number = ["6374", "4509", "3879"]
 
 dist_name = "uniform"
 sto_poly_deg = 3
@@ -29,8 +31,8 @@ n_modes = basis["n_modes"]
 
 time_step = 301
 
-#mesh = Mesh(mesh_dir + mesh_file)
-mesh = RectangleMesh(Point(0, 0), Point(1000, 200), 100, 20)
+mesh = Mesh(mesh_dir + mesh_file)
+#mesh = RectangleMesh(Point(0, 0), Point(1000, 200), 100, 20)
 B = FunctionSpace(mesh, "CG", 1)
 C = VectorFunctionSpace(mesh, "CG", 2, dim=2)
 

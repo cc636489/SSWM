@@ -4,14 +4,17 @@ sys.path.append('/workspace/Documentation/Research_Doc/SFEM_Doc/7-SSWM-github/sr
 from fenics import *
 from make_sto_basis import make_sto_basis
 
-name = "test4"
+name = "IKE"
 input_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"+name+"_stochastic/"
 output_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"+name+"_results/"
 time_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"+name+"_bins/"
 mesh_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/7-SSWM-github/input/"
-mesh_file = "inlet_adh_sswm_finer.xml"
-u_file = "u_used_for_read_back_" + name + "_stochastic_0.2_0.75_0.13les_"
-eta_file = "eta_used_for_read_back_" + name + "_stochastic_0.2_0.75_0.13les_"
+#mesh_file = "inlet_adh_sswm_finer.xml"
+#u_file = "u_used_for_read_back_" + name + "_stochastic_0.2_0.75_0.13les_"
+#eta_file = "eta_used_for_read_back_" + name + "_stochastic_0.2_0.75_0.13les_"
+mesh_file = "Gulf_wind.xml"
+u_file = "u_used_for_read_back_gulf_winds_ike_stochastic_"
+eta_file = "eta_used_for_read_back_gulf_winds_ike_stochastic_"
 time_file = "time_stamp_at_every_time_step.npy"
 variance_eta_file = "eta_variance_in_domain.xdmf"
 variance_u_file = "u_variance_in_domain.xdmf"
@@ -21,9 +24,9 @@ variance_u_h5file = "u_used_for_read_back_variance_in_domain.h5"
 variance_v_h5file = "v_used_for_read_back_variance_in_domain.h5"
 
 dist_name = "uniform"
-sto_poly_deg = 3
+sto_poly_deg = 1
 sto_poly_dim = 1
-coefficient = [1.0, 2.0]
+coefficient = [0.8, 1.2]
 
 basis = make_sto_basis(dist_name, sto_poly_deg, sto_poly_dim, coefficient)
 orth = basis["basis"]

@@ -6,6 +6,7 @@ from driver_model_read_input import model_read_input_driver
 from driver_model_initiate import model_initiate_driver
 from driver_model_formulate import model_formulate_driver
 from driver_model_run import model_run_driver
+from fenics import list_timings
 sys.setrecursionlimit(70000)
 
 
@@ -21,6 +22,8 @@ def main():
     formulate = model_formulate_driver(inputs, initiate)
 
     model_run_driver(inputs, initiate, formulate)
+
+    list_timings(TimingClear_keep, [TimingType_wall, TimingType_system])
 
 
 if __name__ == "__main__":

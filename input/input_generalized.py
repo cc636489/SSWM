@@ -2,12 +2,13 @@
 # Input parameter
 ##################################################################
 # output file name string
+from fenics import *
 input_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/7-SSWM-github/input/"
 output_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"
-output_str = "gulf_winds_ike_stochastic_"
+output_str = "gulf_winds_harvey_stochastic_8.0_4.0_"
 bath_file = "Gulf_wind_bathymetry.nc"
 mesh_file = "Gulf_wind.xml"
-wind_file = "Gulf_wind.ike.fort.22"
+wind_file = "Gulf_wind.harvey.fort.22"
 boundary_file = "Gulf_wind_facet_region.xml"
 
 # stochastic input
@@ -18,7 +19,7 @@ test_node_y = [3.3574974964899998e+06]
 
 # stochastic basis
 dist_name = "uniform"  # "uniform"  or "gaussian"   ==> only enable "uniform" mode at present.
-sto_poly_deg = 2  # polynomial chaos order is 2.
+sto_poly_deg = 1  # polynomial chaos order is 2.
 # the dimension and coefficient should be paired and dim!=0  and coefficient!=Null
 sto_poly_dim = 1  # use "q0","q1","q2", ....
 coefficient = [0.8, 1.2]  # lower1/upper1--lower2/upper2--...
@@ -32,7 +33,7 @@ domain = {"importfile": input_dir + mesh_file}
 # stochastic coefficient # if contains sin(), cos(), should use sympy sin and sympy cos!!!!!!!!!!
 sto_viscosity = "1e-6"
 sto_bottomDrag = "0.003"
-sto_windDrag = "0.001*q0"  # or 0.001*q0*q1
+sto_windDrag = "q0"  # or 0.001*q1*q2
 
 # terms control
 include_viscosity = True
@@ -43,13 +44,15 @@ include_wind_stress = True
 include_const_wind = False
 wind_x = 1.0
 wind_y = 0.0
+wind_scheme = "powell"  # or "garratt"
 include_bottom_stress = True
 include_atmospheric_pressure = True
-include_supg = False
-include_crosswind = False
-include_auxiliary_viscosity = True
+include_supg = True
+include_crosswind = True
+include_auxiliary_viscosity = False
 include_interior_penalty = True
-les_parameters = {'smagorinsky_coefficient': 0.13}
+sigma = 8.0
+les_parameters = {'smagorinsky_coefficient': 4.0}
 DEBUG_mode = False
 USE_pvd = True
 USE_HDF5 = True
@@ -60,7 +63,7 @@ USE_iterative = False
 tidal_amplitude = 0.3
 tidal_period = 12.41666*60*60
 start_time = 0.0
-end_time = 223500.0
+end_time = 518400.0  # 6 days
 time_step = 447.0
 theta = 1.0
 
@@ -105,3 +108,4 @@ boundary_eta = {}
 # boundary_u = {1: "free_slip_in_y", 2: "free_slip_in_y", 3: "free_slip_in_x", 4: "free_slip_in_x"}
 # include sin cos ==> should add sympy symbol!!!
 # boundary_eta = {}
+

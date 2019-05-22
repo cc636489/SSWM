@@ -18,7 +18,7 @@ test_node_y = [3.3574974964899998e+06]
 
 # stochastic basis
 dist_name = "uniform"  # "uniform"  or "gaussian"   ==> only enable "uniform" mode at present.
-sto_poly_deg = 2  # polynomial chaos order is 2.
+sto_poly_deg = 1  # polynomial chaos order is 2.
 # the dimension and coefficient should be paired and dim!=0  and coefficient!=Null
 sto_poly_dim = 1  # use "q0","q1","q2", ....
 coefficient = [0.8, 1.2]  # lower1/upper1--lower2/upper2--...
@@ -32,7 +32,7 @@ domain = {"importfile": input_dir + mesh_file}
 # stochastic coefficient # if contains sin(), cos(), should use sympy sin and sympy cos!!!!!!!!!!
 sto_viscosity = "1e-6"
 sto_bottomDrag = "0.003"
-sto_windDrag = "0.001*q0"  # or 0.001*q0*q1
+sto_windDrag = "q0"  # or 0.001*q0*q1
 
 # terms control
 include_viscosity = True
@@ -43,15 +43,17 @@ include_wind_stress = True
 include_const_wind = False
 wind_x = 1.0
 wind_y = 0.0
+wind_scheme = "powell"  # or "garratt"
 include_bottom_stress = True
 include_atmospheric_pressure = True
-include_supg = False
-include_crosswind = False
-include_auxiliary_viscosity = True
+include_supg = True
+include_crosswind = True
+include_auxiliary_viscosity = False
 include_interior_penalty = True
-les_parameters = {'smagorinsky_coefficient': 0.13}
+sigma = 9.0
+les_parameters = {'smagorinsky_coefficient': 2.0}
 DEBUG_mode = False
-USE_pvd = True
+USE_pvd = False 
 USE_HDF5 = True
 USE_iterative = False
 

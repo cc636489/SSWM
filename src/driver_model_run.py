@@ -9,7 +9,6 @@ def model_run_driver(inputs, initiate, formulate):
 
     run.run_prep()
 
-    print "okay to here"
     run.running()
 
     run.run_final()
