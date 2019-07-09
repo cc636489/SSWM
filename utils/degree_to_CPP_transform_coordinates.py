@@ -20,10 +20,15 @@ def cpp_transform(new_lat, new_lon):
 
     return x_dis, y_dis
 
-lat_deg = [30, 29, 29, 29, 29, 29, 27]
-lat_cen = [1.6, 27, 46.1, 28.8, 21.4, 18.6, 34.8]
-lon_deg = [90, 91, 93, 94, 94, 94, 97]
-lon_cen = [6.8, 20.3, 20.6, 55.1, 43.5, 47.6, 13]
+#lat_deg = [30, 29, 29, 29, 29, 29, 27]
+#lat_cen = [1.6, 27, 46.1, 28.8, 21.4, 18.6, 34.8]
+#lon_deg = [90, 91, 93, 94, 94, 94, 97]
+#lon_cen = [6.8, 20.3, 20.6, 55.1, 43.5, 47.6, 13]
+
+lat_deg = [28, 27, 27]
+lat_cen = [25.6, 50.2, 34.8]
+lon_deg = [96, 97, 97]
+lon_cen = [19.8, 2.3, 13]
 
 lat = [lat_deg[i] + x / 60. for i, x in enumerate(lat_cen)]
 lon = [- lon_deg[i] - x / 60. for i, x in enumerate(lon_cen)]

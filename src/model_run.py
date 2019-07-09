@@ -197,24 +197,24 @@ class ModelRun:
                                                             "eta_used_for_read_back_" + self.inputs.output_str +
                                                             "{:02d}".format(mode) + ".h5", "w"))
 
-        if self.inputs.include_wind_stress:
-            if self.inputs.USE_pvd:
-                self.wind_xy_output_file.append(File(self.inputs.output_dir + "wind_vel_" +
-                                                     self.inputs.output_str + "0.pvd"))
-                self.wind_drag_output_file.append(File(self.inputs.output_dir + "wind_drag_" +
-                                                     self.inputs.output_str + "0.pvd"))
-            else:
-                self.wind_xy_output_file.append(XDMFFile(self.inputs.output_dir + "wind_vel_" +
-                                                         self.inputs.output_str + "0.xdmf"))
-                self.wind_drag_output_file.append(XDMFFile(self.inputs.output_dir + "wind_drag_" +
-                                                         self.inputs.output_str + "0.xdmf"))
-            if self.inputs.USE_HDF5:
-                self.wind_xy_used_for_read_back.append(HDF5File(self.initiate.mesh.mpi_comm(), self.inputs.output_dir +
-                                                                "wind_used_for_read_back_" + self.inputs.output_str +
-                                                                "0.h5", "w"))
-                self.wind_drag_used_for_read_back.append(HDF5File(self.initiate.mesh.mpi_comm(), self.inputs.output_dir +
-                                                                "wind_drag_used_for_read_back_" + self.inputs.output_str +
-                                                                "0.h5", "w"))
+        #if self.inputs.include_wind_stress:
+        #    if self.inputs.USE_pvd:
+        #        self.wind_xy_output_file.append(File(self.inputs.output_dir + "wind_vel_" +
+        #                                             self.inputs.output_str + "0.pvd"))
+        #        self.wind_drag_output_file.append(File(self.inputs.output_dir + "wind_drag_" +
+        #                                             self.inputs.output_str + "0.pvd"))
+        #    else:
+        #        self.wind_xy_output_file.append(XDMFFile(self.inputs.output_dir + "wind_vel_" +
+        #                                                 self.inputs.output_str + "0.xdmf"))
+        #        self.wind_drag_output_file.append(XDMFFile(self.inputs.output_dir + "wind_drag_" +
+        #                                                 self.inputs.output_str + "0.xdmf"))
+        #    if self.inputs.USE_HDF5:
+        #        self.wind_xy_used_for_read_back.append(HDF5File(self.initiate.mesh.mpi_comm(), self.inputs.output_dir +
+        #                                                        "wind_used_for_read_back_" + self.inputs.output_str +
+        #                                                        "0.h5", "w"))
+        #        self.wind_drag_used_for_read_back.append(HDF5File(self.initiate.mesh.mpi_comm(), self.inputs.output_dir +
+        #                                                        "wind_drag_used_for_read_back_" + self.inputs.output_str +
+        #                                                        "0.h5", "w"))
 
     def _run_write_file(self):
         """ write to files. """
@@ -242,19 +242,19 @@ class ModelRun:
                     self.u_used_for_read_back[mode].write(tmp1[mode], "WaterVelocity", float(self.initiate.t))
                     self.eta_used_for_read_back[mode].write(tmp2[mode], "SurfaceElevation", float(self.initiate.t))
 
-        if self.inputs.include_wind_stress:
-            self.initiate.wind_vector.assign(project(as_vector([self.initiate.wind_para_x, self.initiate.wind_para_y]),
-                                                     self.initiate.C))
-            self.initiate.wind_drag.assign(project(self.initiate.wdrag, self.initiate.B))
-            if self.inputs.USE_pvd:
-                self.wind_xy_output_file[0] << (self.initiate.wind_vector, float(self.initiate.t))
-                self.wind_drag_output_file[0] << (self.initiate.wind_drag, float(self.initiate.t))
-            else:
-                self.wind_xy_output_file[0].write(self.initiate.wind_vector, float(self.initiate.t))
-                self.wind_drag_output_file[0].write(self.initiate.wind_drag, float(self.initiate.t))
-            if self.inputs.USE_HDF5:
-                self.wind_xy_used_for_read_back[0].write(self.initiate.wind_vector, "WindSpeed", float(self.initiate.t))
-                self.wind_drag_used_for_read_back[0].write(self.initiate.wind_drag, "WindDrag", float(self.initiate.t))
+        #if self.inputs.include_wind_stress:
+        #    self.initiate.wind_vector.assign(project(as_vector([self.initiate.wind_para_x, self.initiate.wind_para_y]),
+        #                                             self.initiate.C))
+        #    self.initiate.wind_drag.assign(project(self.initiate.wdrag, self.initiate.B))
+        #    if self.inputs.USE_pvd:
+        #        self.wind_xy_output_file[0] << (self.initiate.wind_vector, float(self.initiate.t))
+        #        self.wind_drag_output_file[0] << (self.initiate.wind_drag, float(self.initiate.t))
+        #    else:
+        #        self.wind_xy_output_file[0].write(self.initiate.wind_vector, float(self.initiate.t))
+        #        self.wind_drag_output_file[0].write(self.initiate.wind_drag, float(self.initiate.t))
+        #    if self.inputs.USE_HDF5:
+        #        self.wind_xy_used_for_read_back[0].write(self.initiate.wind_vector, "WindSpeed", float(self.initiate.t))
+        #        self.wind_drag_used_for_read_back[0].write(self.initiate.wind_drag, "WindDrag", float(self.initiate.t))
 
     def _run_initialize_bins(self):
         """ initialize arrays to save stochastic results. """

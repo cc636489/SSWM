@@ -9,7 +9,7 @@ input_file = "input_generalized_testcase_"
 target_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/7-SSWM-github/input/"
 exec_file = "/workspace/Documentation/Research_Doc/SFEM_Doc/7-SSWM-github/src/driver.py"
 
-for q0 in np.linspace(0.8244898, 0.84897959, num = 4):
+for q0 in np.linspace(0.93877551, 0.96326531, num = 4):
     #for q1 in np.linspace(1.0, 2.0, num = 20):
         #output_input_file = input_file + "deterministic_4_" + str(round(q0, 2)) + "_" + str(round(q1, 2)) + ".py"
         output_input_file = input_file + "deterministic_HARVEY_" + str(round(q0, 4)) + ".py"

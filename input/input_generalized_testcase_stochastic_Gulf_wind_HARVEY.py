@@ -2,9 +2,10 @@
 # Input parameter
 ##################################################################
 # output file name string
+from fenics import *
 input_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/7-SSWM-github/input/"
 output_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"
-output_str = "gulf_winds_harvey_stochastic_"
+output_str = "gulf_winds_harvey_stochastic_4.0_2.0_"
 bath_file = "Gulf_wind_bathymetry.nc"
 mesh_file = "Gulf_wind.xml"
 wind_file = "Gulf_wind.harvey.fort.22"
@@ -50,10 +51,10 @@ include_supg = True
 include_crosswind = True
 include_auxiliary_viscosity = False
 include_interior_penalty = True
-sigma = 9.0
+sigma = 4.0
 les_parameters = {'smagorinsky_coefficient': 2.0}
 DEBUG_mode = False
-USE_pvd = True
+USE_pvd = False
 USE_HDF5 = True
 USE_iterative = False
 
@@ -107,3 +108,4 @@ boundary_eta = {}
 # boundary_u = {1: "free_slip_in_y", 2: "free_slip_in_y", 3: "free_slip_in_x", 4: "free_slip_in_x"}
 # include sin cos ==> should add sympy symbol!!!
 # boundary_eta = {}
+

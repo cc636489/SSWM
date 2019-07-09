@@ -7,8 +7,8 @@ import matplotlib.ticker as mtick
 loc = '/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/'
 dir = '_bins/'
 out_dir = '_results/'
-case = 'IKE'
-name = 'v'
+case = 'HARVEY'
+name = 'u'
 model_file = case + '_bin_random_'+name+'1_surrogate_all_points_order_1.npy'
 truth_file = case + '_bin_random_'+name+'1_true_all_points_order_1.npy'
 a = np.load(loc + case + dir + model_file)
@@ -19,14 +19,15 @@ x2 = 1.2
 tick_num = 10
 n_sample = 50
 
-time_step = 500
+time_step = 1160
 dt = 447
+nnode = 21
 
 for i in range(time_step):
     fig, ax = plt.subplots(figsize = [10, 6])
     X = np.linspace(x1, x2, n_sample)
-    vmin = min(np.min(a[:, i, 4]), np.min(b[:, i, 4]))
-    vmax = max(np.max(a[:, i, 4]), np.max(b[:, i, 4]))
+    vmin = min(np.min(a[:, i, nnode]), np.min(b[:, i, nnode]))
+    vmax = max(np.max(a[:, i, nnode]), np.max(b[:, i, nnode]))
     if vmin < 0:
         vmin = 1.2 * vmin
     else:
@@ -36,8 +37,8 @@ for i in range(time_step):
     else:
         vmax = 1.2 * vmax
     print vmin, vmax
-    ax.plot(X[:], a[:, i, 4], '-', label = 'model solution')
-    ax.plot(X[:], b[:, i, 4], 'x', label = "true solution")
+    ax.plot(X[:], a[:, i, nnode], '-', label = 'model solution')
+    ax.plot(X[:], b[:, i, nnode], 'x', label = "true solution")
     ax.legend(loc = "upper right")
     plt.xlabel(r'$\xi_1$')
     if name == 'eta':
