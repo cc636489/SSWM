@@ -360,7 +360,7 @@ class ModelInitiate:
         elif self.inputs.wind_scheme == "garratt":
             self.wdrag = 0.001 * (0.75 + 40. / 600. * sqrt(self.wind_para_x ** 2 + self.wind_para_y ** 2))
         else:
-            print "not implement this wind drag coefficient scheme yet."
+            print("not implement this wind drag coefficient scheme yet.")
 
 
     def make_const_wind(self):

@@ -2,8 +2,8 @@
 # Input parameter
 ##################################################################
 # output file name string
-input_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/7-SSWM-github/input/"
-output_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test/"
+input_dir = "/Users/chenchen/gloria/7-SSWM-github/input/"
+output_dir = "/Users/chenchen/gloria/test_fenics/"
 output_str = "test2_generalized_"
 bath_file = " "
 mesh_file = " "

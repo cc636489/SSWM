@@ -1,4 +1,8 @@
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
+font = {'family' : 'normal', 'size'   : 22}
+matplotlib.rc('font', **font)
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import matplotlib.ticker as mtick
@@ -7,8 +11,9 @@ import matplotlib.ticker as mtick
 loc = '/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/'
 dir = '_bins/'
 out_dir = '_results/'
-case = 'test2'
+case = 'test3'
 name = 'v'
+colorbar_format = '%.2e'
 model_file = case + '_bin_random_'+name+'1_surrogate_all_points_order_1.npy'
 truth_file = case + '_bin_random_'+name+'1_true_all_points_order_1.npy'
 a = np.load(loc + case + dir + model_file)
@@ -16,12 +21,13 @@ b = np.load(loc + case + dir + truth_file)
 
 x1 = 0.8
 x2 = 1.2
-x3 = 1.0
-x4 = 2.0
-num = 10.0
+x3 = 0.9
+x4 = 1.1
+num = 6.0
 n_sample = 20
 
-time_step = 100
+time_step = 300
+delta_t = 1.0
 
 for i in range(time_step):
     fig, ax = plt.subplots()
@@ -46,16 +52,16 @@ for i in range(time_step):
     plt.yticks(np.linspace(x3, x4, num))
     plt.gca().xaxis.set_major_formatter(mtick.FormatStrFormatter('%.2f'))
     plt.gca().yaxis.set_major_formatter(mtick.FormatStrFormatter('%.2f'))
-    plt.title('time:'+str(i)+' sec')
-    cbar = plt.colorbar(format='%.5e')
+    plt.title('time:'+str(round(i*delta_t, 1))+' sec')
+    cbar = plt.colorbar(format=colorbar_format, ticks=np.linspace(vmin, vmax, num))
     if name == 'eta':
-        cbar.ax.set_title(r'$\eta_{model}, \eta_{truth}$')
+        cbar.ax.set_ylabel(r'$\eta_{sswm}, \eta_{truth}$')
     elif name == 'u':
-        cbar.ax.set_title(r'$u_{model}, u_{truth}$')
+        cbar.ax.set_ylabel(r'$u_{sswm}, u_{truth}$')
     elif name == 'v':
-        cbar.ax.set_title(r'$v_{model}, v_{truth}$')
+        cbar.ax.set_ylabel(r'$v_{sswm}, v_{truth}$')
     #plt.show()
-    plt.savefig(loc + case + out_dir + name + '_display_surrogate_comparison_'+str(i)+'.png')
+    plt.savefig(loc + case + out_dir + name + '_display_surrogate_comparison_'+str(i)+'.pdf',bbox_inches='tight')
     plt.close()
 
 

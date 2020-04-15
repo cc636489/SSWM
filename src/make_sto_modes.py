@@ -1,5 +1,5 @@
 
-
+from subprocess import check_call
 from chaospy import poly
 import sympy as sp
 from numpy import pi
@@ -20,12 +20,12 @@ def make_sto_modes(pc_basis_str, *args):
     str_x = "x = sp.Symbol('x[0]')"
     str_y = "y = sp.Symbol('x[1]')"
     str_t = "t = sp.Symbol('t')"
-    exec str_x in globals()
-    exec str_y in globals()
-    exec str_t in globals()
+    exec(str_x)
+    exec(str_y)
+    exec(str_t)
     for i in range(dim):
         str_dim = "q"+str(i) + "=sp.Symbol('q"+str(i)+"')"
-        exec str_dim in globals()
+        exec(str_dim)
 
     # create modes one by one.
     string = "[sp.printing.ccode(  sp.integrate( eval(args[arg]) * (expr) * joint_pdf, "

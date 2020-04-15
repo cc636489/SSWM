@@ -1,7 +1,15 @@
 
 import numpy as np
 import pandas as pd
+import matplotlib
+matplotlib.use('Agg')
+
+font = {'family' : 'normal',
+                      'size'   : 22}
+
+matplotlib.rc('font', **font)
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mtick
 from fenics import *
 
 
@@ -124,24 +132,24 @@ for k in range(time_step):
 for k, [field_mean, field_var] in enumerate([[plot_eta_mean, plot_eta_var], [plot_u_mean, plot_u_var], [plot_v_mean,
                                                                                                          plot_v_var]]):
     for i in range(len(test_nodes)):
-        plt.figure(figsize=[7, 6])
+        plt.figure(figsize=[11.5, 7])
 
         cc1 = field_mean[:, i] - field_var[:, i]
         cc2 = field_mean[:, i] + field_var[:, i]
         if k == 0: 
-            plt.plot(time, field_mean[:, i], '-', label='surrogate', alpha=0.2, color='#1B2ACC')
-            plt.plot(time_obs[::10], tmp_obs[i][::10], "*", label='ADCIRC', color="orange")
+            plt.plot(time, field_mean[:, i], '-', label='SSWM:'+r'$\mu\pm\sigma$', alpha=0.2, color='#1B2ACC')
+            plt.plot(time_obs[::10], tmp_obs[i][::10], "*", label='ADCIRC', color="darkorange")
             ymin = min(min(cc1), min(tmp_obs[i]))
             ymax = max(max(cc2), max(tmp_obs[i]))
         else:
             plt.plot(time, field_mean[:, i], '-', alpha=0.2, color='#1B2ACC')
             ymin = min(cc1)
             ymax = max(cc2)
-        plt.legend(loc="upper left")
+        plt.legend()
         plt.fill_between(time, field_mean[:, i] - field_var[:, i],  field_mean[:, i] + field_var[:, i], alpha=0.2,
-                         edgecolor='#1B2ACC', facecolor='#089FFF', linewidth=0.2, linestyle='dashdot', antialiased=True)
+                         edgecolor='mediumseagreen', facecolor='mediumseagreen', linewidth=0.2, linestyle='dashdot', antialiased=True)
         plt.xlim([min(time), max(time)])
-        plt.xticks(np.linspace(min(time), max(time), 10))
+        plt.xticks(np.linspace(min(time), max(time), 6))
         if ymin <= 0 and ymax <= 0:
             plt.ylim([ymin * 1.2, ymax * 0.8])
         elif ymin <= 0 and ymax > 0:
@@ -153,17 +161,20 @@ for k, [field_mean, field_var] in enumerate([[plot_eta_mean, plot_eta_var], [plo
         print ymin, ymax
         plt.xlabel('time:day')
         if k == 0:
-            plt.ylabel('Surface Elevation:m')
+            plt.ylabel('Surface Elevation: m')
             plt.title('Comparison of surface elevation at node ' + test_node_str_node_number[i])
-            plt.savefig(output_dir + 'eta_validation_ADCIRC_line_mean_variance_' + test_node_str_node_number[i][:7] +'.png')
+            plt.gca().yaxis.set_major_formatter(mtick.FormatStrFormatter('%.2f'))
+            plt.savefig(output_dir + 'eta_validation_ADCIRC_line_mean_variance_' + test_node_str_node_number[i][:7] +'.pdf')
         elif k == 1:
-            plt.ylabel('x-direction Water Velocity:m/s')
+            plt.ylabel('x-direction Water Velocity: m/s')
             plt.title('Comparison of x-direction water velocity at node ' + test_node_str_node_number[i])
-            plt.savefig(output_dir + 'u_validation_ADCIRC_line_mean_variance_' + test_node_str_node_number[i][:7] +'.png')
+            plt.gca().yaxis.set_major_formatter(mtick.FormatStrFormatter('%.2f'))
+            plt.savefig(output_dir + 'u_validation_ADCIRC_line_mean_variance_' + test_node_str_node_number[i][:7] +'.pdf')
         else:
-            plt.ylabel('y-direction Water Velocity:m/s')
+            plt.ylabel('y-direction Water Velocity: m/s')
             plt.title('Comparison of y-direction water velocity at node ' + test_node_str_node_number[i])
-            plt.savefig(output_dir + 'v_validation_ADCIRC_line_mean_variance_' + test_node_str_node_number[i][:7] +'.png')
+            plt.gca().yaxis.set_major_formatter(mtick.FormatStrFormatter('%.2f'))
+            plt.savefig(output_dir + 'v_validation_ADCIRC_line_mean_variance_' + test_node_str_node_number[i][:7] +'.pdf')
         #plt.legend(['mean', r'mean$\pm\sigma$'])
         plt.close()
         print "Done: " + str(i) + "test_node."

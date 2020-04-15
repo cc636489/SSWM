@@ -1,6 +1,13 @@
 
 import numpy as np
 import pandas as pd
+import matplotlib
+matplotlib.use('Agg')
+
+font = {'family' : 'normal',
+              'size'   : 22}
+
+matplotlib.rc('font', **font)
 import matplotlib.pyplot as plt
 from fenics import *
 
@@ -8,6 +15,7 @@ from fenics import *
 name = "IKE"
 input_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"+name+"_stochastic/"
 output_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"+name+"_results/"
+cc_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"
 time_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"+name+"_bins/"
 mesh_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/7-SSWM-github/input/"
 mesh_file = "Gulf_wind.xml"
@@ -23,10 +31,16 @@ variance_v_file = "v_used_for_read_back_variance_in_domain.h5"
 #file2 = "8768094_Calcasieu_Pass_29_46.1N_93_20.6W.csv"
 #file3 = "8764227_LAWMA_Amerada_Pass_29_27N_91_20.3W.csv"
 
+# This is SSWM node number "6374", <==> ADCIRC node "6375"
+# However, we have already substract ADCIRC node "6374"
+# We need to change it to SSWM "6373".
 
-test_node_x = [3.2375397324999998e+05, 4.0413550053600001e+05, 6.5208921350399998e+05, 3.2900153713800001e+05, 3.2557148308400001e+05, 3.1881131950699998e+05, 3.1460159233700001e+05, 3.3496542305799999e+05, 3.0139283829799999e+05, 3.1282448336200003e+05, 2.9570583575099998e+05, 2.8491055709199997e+05, 3.4851441155299998e+05, 4.2815074394299998e+05, 5.7302018531800003e+05, 6.3071504403200001e+05, 6.6204347742899996e+05, 7.8584841874100000e+05, 7.9657833684899996e+05, 8.6587532801900001e+05, 9.3000227841499995e+05, 2.6392368590400001e+05, 1.6298658246000001e+05]
-test_node_y = [3.2675570484799999e+06, 3.3039835199199999e+06, 3.2880523029299998e+06, 3.2657850455399998e+06, 3.2670047864700002e+06, 3.2679612539499998e+06, 3.2836322031399999e+06, 3.2890447269899999e+06, 3.2982392603799999e+06, 3.3043017858099998e+06, 3.2589011959699998e+06, 3.2381142812700002e+06, 3.2793550391199999e+06, 3.2975682191800000e+06, 3.2830367486999999e+06, 3.2823205112999999e+06, 3.2709672468599998e+06, 3.2448157875399999e+06, 3.3663629658800000e+06, 3.2474602108100001e+06, 3.3006520252700001e+06, 3.2122789727400001e+06, 3.1579897588000000e+06]
+#test_node_x = [3.2375397324999998e+05, 4.0413550053600001e+05, 6.5208921350399998e+05, 3.2900153713800001e+05, 3.2557148308400001e+05, 3.1881131950699998e+05, 3.1460159233700001e+05, 3.3496542305799999e+05, 3.0139283829799999e+05, 3.1282448336200003e+05, 2.9570583575099998e+05, 2.8491055709199997e+05, 3.4851441155299998e+05, 4.2815074394299998e+05, 5.7302018531800003e+05, 6.3071504403200001e+05, 6.6204347742899996e+05, 7.8584841874100000e+05, 7.9657833684899996e+05, 8.6587532801900001e+05, 9.3000227841499995e+05, 2.6392368590400001e+05, 1.6298658246000001e+05]
+#test_node_y = [3.2675570484799999e+06, 3.3039835199199999e+06, 3.2880523029299998e+06, 3.2657850455399998e+06, 3.2670047864700002e+06, 3.2679612539499998e+06, 3.2836322031399999e+06, 3.2890447269899999e+06, 3.2982392603799999e+06, 3.3043017858099998e+06, 3.2589011959699998e+06, 3.2381142812700002e+06, 3.2793550391199999e+06, 3.2975682191800000e+06, 3.2830367486999999e+06, 3.2823205112999999e+06, 3.2709672468599998e+06, 3.2448157875399999e+06, 3.3663629658800000e+06, 3.2474602108100001e+06, 3.3006520252700001e+06, 3.2122789727400001e+06, 3.1579897588000000e+06]
+test_node_x = [3.2402186690199998e+05, 4.6935285107099998e+05, 6.6736137265599996e+05, 3.2856664622000000e+05, 3.2529322481400002e+05, 3.1858816293200001e+05, 3.1292030319900002e+05, 3.3593948564500001e+05, 3.0007843549300003e+05, 3.1927603514400002e+05, 2.9937036285099998e+05, 2.8432231212800002e+05, 3.4697452542100003e+05, 4.1839055220600002e+05, 5.8269936381600006e+05, 6.4208428986400005e+05, 6.7038572594100004e+05, 7.7422587433200004e+05, 8.0185519664700003e+05, 8.4953476710299996e+05, 9.2267523367999995e+05, 2.5763542973900001e+05, 1.5587698318400001e+05]
+test_node_y = [3.2672211939200000e+06, 3.3140610491200001e+06, 3.2889479893000000e+06, 3.2655972475200002e+06, 3.2666293017500001e+06, 3.2677337144300002e+06, 3.2832635089699998e+06, 3.2879437652500002e+06, 3.2967217365700002e+06, 3.3048165327400002e+06, 3.2577057229499999e+06, 3.2374947815700001e+06, 3.2788214789999998e+06, 3.2966514931999999e+06, 3.2805300291300002e+06, 3.2774865211399999e+06, 3.2702405453200000e+06, 3.2443050481599998e+06, 3.3604420403800001e+06, 3.2448157875399999e+06, 3.2986607205500002e+06, 3.2118147654100000e+06, 3.1535162250700002e+06]
 test_node_str = ["8771341", "8768094", "8764227"]
+#node number is named after ADCIRC system. however, SSWM system will need -1. 
 test_node_str_node_number = ["6374", "4509", "3879", "6028", "6317", "6631", "7548", "7728", "7796", "7856", "6381", "5442", "5171", "4360", "3516", "3702", "3525", "2812", "5926", "2112", "1561", "4661", "4437"]
 
 time_step = 500
@@ -123,24 +137,24 @@ for k in range(time_step):
 for k, [field_mean, field_var] in enumerate([[plot_eta_mean, plot_eta_var], [plot_u_mean, plot_u_var], [plot_v_mean,
                                                                                                          plot_v_var]]):
     for i in range(len(test_nodes)):
-        plt.figure(figsize=[7, 6])
+        plt.figure(figsize=[11.5, 7])
 
         cc1 = field_mean[:, i] - field_var[:, i]
         cc2 = field_mean[:, i] + field_var[:, i]
         if k == 0: 
-            plt.plot(time, field_mean[:, i], '-', label='surrogate', alpha=0.2, color='#1B2ACC')
-            plt.plot(time_obs[::10], tmp_obs[i][::10], "*", label='ADCIRC', color="orange")
+            plt.plot(time, field_mean[:, i], '-', label='SSWM:'+r'$\mu\pm\sigma$', alpha=0.2, color='#1B2ACC')
+            plt.plot(time_obs[::10], tmp_obs[i][::10], "*", label='ADCIRC', color="darkorange")
             ymin = min(min(cc1), min(tmp_obs[i]))
             ymax = max(max(cc2), max(tmp_obs[i]))
         else:
             plt.plot(time, field_mean[:, i], '-', alpha=0.2, color='#1B2ACC')
             ymin = min(cc1)
             ymax = max(cc2)
-        plt.legend(loc="upper left")
+        plt.legend()
         plt.fill_between(time, field_mean[:, i] - field_var[:, i],  field_mean[:, i] + field_var[:, i], alpha=0.2,
-                         edgecolor='#1B2ACC', facecolor='#089FFF', linewidth=0.2, linestyle='dashdot', antialiased=True)
+                         edgecolor='mediumseagreen', facecolor='mediumseagreen', linewidth=0.2, linestyle='dashdot', antialiased=True)
         plt.xlim([min(time), max(time)])
-        plt.xticks(np.linspace(min(time), max(time), 10))
+        plt.xticks(np.linspace(min(time), max(time), 6))
         if ymin <= 0 and ymax <= 0:
             plt.ylim([ymin * 1.2, ymax * 0.8])
         elif ymin <= 0 and ymax > 0:
@@ -152,17 +166,20 @@ for k, [field_mean, field_var] in enumerate([[plot_eta_mean, plot_eta_var], [plo
         print ymin, ymax
         plt.xlabel('time:day')
         if k == 0:
-            plt.ylabel('Surface Elevation:m')
+            plt.ylabel('Surface Elevation: m')
             plt.title('Comparison of surface elevation at node ' + test_node_str_node_number[i])
-            plt.savefig(output_dir + 'eta_validation_ADCIRC_line_mean_variance_' + test_node_str_node_number[i][:7] +'.png')
+            #plt.savefig(output_dir + 'eta_validation_ADCIRC_line_mean_variance_' + test_node_str_node_number[i][:7] +'.pdf')
+            plt.savefig(cc_dir + 'eta_validation_ADCIRC_line_mean_variance_' + test_node_str_node_number[i][:7] +'.pdf')
         elif k == 1:
-            plt.ylabel('x-direction Water Velocity:m/s')
+            plt.ylabel('x-direction Water Velocity: m/s')
             plt.title('Comparison of x-direction water velocity at node ' + test_node_str_node_number[i])
-            plt.savefig(output_dir + 'u_validation_ADCIRC_line_mean_variance_' + test_node_str_node_number[i][:7] +'.png')
+            #plt.savefig(output_dir + 'u_validation_ADCIRC_line_mean_variance_' + test_node_str_node_number[i][:7] +'.pdf')
+            plt.savefig(cc_dir + 'u_validation_ADCIRC_line_mean_variance_' + test_node_str_node_number[i][:7] +'.pdf')
         else:
-            plt.ylabel('y-direction Water Velocity:m/s')
+            plt.ylabel('y-direction Water Velocity: m/s')
             plt.title('Comparison of y-direction water velocity at node ' + test_node_str_node_number[i])
-            plt.savefig(output_dir + 'v_validation_ADCIRC_line_mean_variance_' + test_node_str_node_number[i][:7] +'.png')
+            #plt.savefig(output_dir + 'v_validation_ADCIRC_line_mean_variance_' + test_node_str_node_number[i][:7] +'.pdf')
+            plt.savefig(cc_dir + 'v_validation_ADCIRC_line_mean_variance_' + test_node_str_node_number[i][:7] +'.pdf')
         #plt.legend(['mean', r'mean$\pm\sigma$'])
         plt.close()
         print "Done: " + str(i) + "test_node."

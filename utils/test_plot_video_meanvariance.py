@@ -4,17 +4,22 @@ sys.path.append('/workspace/Documentation/Research_Doc/SFEM_Doc/7-SSWM-github/sr
 from fenics import *
 from make_sto_basis import make_sto_basis
 
-name = "HARVEY"
-input_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"+name+"_stochastic/"
-output_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"+name+"_results/"
+#name = "HARVEY"
+name = "test2"
+#input_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"+name+"_stochastic/"
+input_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"+name+"_results_larger_variance/"
+#output_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"+name+"_results/"
+output_dir = input_dir 
 time_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"+name+"_bins/"
 mesh_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/7-SSWM-github/input/"
 #mesh_file = "inlet_adh_sswm_finer.xml"
 #u_file = "u_used_for_read_back_" + name + "_stochastic_0.2_0.75_0.13les_"
 #eta_file = "eta_used_for_read_back_" + name + "_stochastic_0.2_0.75_0.13les_"
 mesh_file = "Gulf_wind.xml"
-u_file = "u_used_for_read_back_gulf_winds_" + name.lower() + "_stochastic_4.0_2.0_"
-eta_file = "eta_used_for_read_back_gulf_winds_" + name.lower() + "_stochastic_4.0_2.0_"
+#u_file = "u_used_for_read_back_gulf_winds_" + name.lower() + "_stochastic_4.0_2.0_"
+#eta_file = "eta_used_for_read_back_gulf_winds_" + name.lower() + "_stochastic_4.0_2.0_"
+u_file = "u_used_for_read_back_" + name.lower() + "_stochastic_large_variance_"
+eta_file = "eta_used_for_read_back_" + name.lower() + "_stochastic_large_variance_"
 time_file = "time_stamp_at_every_time_step.npy"
 variance_eta_file = "eta_variance_in_domain.xdmf"
 variance_u_file = "u_variance_in_domain.xdmf"
@@ -24,19 +29,19 @@ variance_u_h5file = "u_used_for_read_back_variance_in_domain.h5"
 variance_v_h5file = "v_used_for_read_back_variance_in_domain.h5"
 
 dist_name = "uniform"
-sto_poly_deg = 1
-sto_poly_dim = 1
-coefficient = [0.8, 1.2]
+sto_poly_deg = 3
+sto_poly_dim = 2
+coefficient = [0.8, 1.2, 0.5, 2.5]
 
 basis = make_sto_basis(dist_name, sto_poly_deg, sto_poly_dim, coefficient)
 orth = basis["basis"]
 n_modes = basis["n_modes"]
 
-time_step = 1160
+time_step = 100
 
-mesh = Mesh(mesh_dir + mesh_file)
+#mesh = Mesh(mesh_dir + mesh_file)
 #mesh = RectangleMesh(Point(0, 0), Point(1000, 200), 100, 20)
-#mesh = RectangleMesh(Point(0, 0), Point(100, 50), 20, 10)
+mesh = RectangleMesh(Point(0, 0), Point(100, 50), 20, 10)
 B = FunctionSpace(mesh, "CG", 1)
 C = VectorFunctionSpace(mesh, "CG", 2, dim=2)
 D = FunctionSpace(mesh, "CG", 2)

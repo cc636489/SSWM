@@ -1,12 +1,11 @@
 """ main function for driving stochastic shallow water model. """
 
-import sys
-sys.path.insert(0, '/workspace/Documentation/Research_Doc/SFEM_Doc/7-SSWM-github/input')
 from driver_model_read_input import model_read_input_driver
 from driver_model_initiate import model_initiate_driver
 from driver_model_formulate import model_formulate_driver
 from driver_model_run import model_run_driver
 from fenics import list_timings, TimingClear_keep, TimingType_wall, TimingType_system, Timer
+import sys
 sys.setrecursionlimit(70000)
 
 

@@ -133,7 +133,7 @@ class ModelRun:
 
     def running(self):
         """ iterate each time step to solve formulated weak forms. """
-        while float(self.initiate.t - self.initiate.finish_time) < -1e-3:
+        while float(self.initiate.t - self.initiate.finish_time) <= 1e-6:
 
             print "starting step:", self.time_step_count, "  time is: ", float(self.initiate.t)
 
