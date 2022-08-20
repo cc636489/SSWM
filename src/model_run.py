@@ -111,8 +111,8 @@ class ModelRun:
             self.A_p_corr = assemble(self.a_p_corr)
             for bc in self.initiate.eta_bc_object_list:
                 bc.apply(self.A_p_corr)
-            self.a_p_corr_solver = LUSolver(self.A_p_corr)
-            self.a_p_corr_solver.parameters["reuse_factorization"] = True
+            self.a_p_corr_solver = LUSolver(self.A_p_corr, "mumps")
+            self.a_p_corr_solver.parameters["symmetric"] = True
         else:
             self.a_p_corr_solver = KrylovSolver("gmres", "ilu")
             self.a_p_corr_solver.parameters['absolute_tolerance'] = 1E-4
@@ -123,8 +123,8 @@ class ModelRun:
         self.A_u_corr = assemble(self.a_u_corr)
         for bc in self.initiate.u_bc_object_list:
             bc.apply(self.A_u_corr)
-        self.a_u_corr_solver = LUSolver(self.A_u_corr)
-        self.a_u_corr_solver.parameters["reuse_factorization"] = True
+        self.a_u_corr_solver = LUSolver(self.A_u_corr, "mumps")
+        self.a_u_corr_solver.parameters["symmetric"] = True
 
         self._run_create_file()
         self._run_write_file()
@@ -135,28 +135,28 @@ class ModelRun:
         """ iterate each time step to solve formulated weak forms. """
         while float(self.initiate.t - self.initiate.finish_time) <= 1e-6:
 
-            print "starting step:", self.time_step_count, "  time is: ", float(self.initiate.t)
+            print("starting step:", self.time_step_count, "  time is: ", float(self.initiate.t))
 
             self._update_boundary()
 
             if self.inputs.include_wind_stress or self.inputs.include_atmospheric_pressure:
-                print "Compute wind stress, pressure and wind drag coefficient."
+                print("Compute wind stress, pressure and wind drag coefficient.")
                 self._update_wind()
 
             if self.inputs.include_const_wind:
                 pass
 
             if self.inputs.include_les:
-                print "Compute eddy viscosity."
+                print("Compute eddy viscosity.")
                 self._update_les()
 
-            print "Compute tentative velocity."
+            print("Compute tentative velocity.")
             self._update_u_tent()
 
-            print "Compute pressure correction."
+            print("Compute pressure correction.")
             self._update_eta_corr()
 
-            print "Compute velocity update."
+            print("Compute velocity update.")
             self._update_u_corr()
 
             self.initiate.u00.assign(self.initiate.u0)
@@ -173,7 +173,7 @@ class ModelRun:
     def run_final(self):
         """ save results to files. """
         self._run_save_bin()
-        print "total time_step is ", self.time_step_count
+        print("total time_step is ", self.time_step_count)
 
     def _run_create_file(self):
         """ open files to write results. """

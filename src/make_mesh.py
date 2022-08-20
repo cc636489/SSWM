@@ -6,7 +6,7 @@ from fenics import RectangleMesh, Mesh, Point
 def make_mesh(domain_dict):
 
     # check if the key and the value are entered right.
-    key = domain_dict.keys()
+    key = list(domain_dict.keys())
     if len(key) != 1:
         raise TypeError("enter more than one domain! not allowed! Exit program...")
 

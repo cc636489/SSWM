@@ -1,6 +1,5 @@
 " Write a nonlinear shallow water equation solver."
-
-
+from dolfin.cpp.log import log
 from fenics import *
 from mshr import *
 import numpy as np
@@ -9,7 +8,8 @@ import sympy as sp
 
 
 hsize = 16
-loc = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/test2_res/20181001_generalized/mode_0_fine_mesh/convergence_test_result/10mesh_5mesh_small_time_step/"
+# loc = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/test2_res/20181001_generalized/mode_0_fine_mesh/convergence_test_result/10mesh_5mesh_small_time_step/"
+loc = "./"
 
 x0 = 0
 y0 = 0
@@ -242,13 +242,13 @@ while float(t - finish_time) <= - 1e3*DOLFIN_EPS:
     error_u_h1.append(errornorm(trueufuc, u1, "H1", 5))
     error_eta_h1.append(errornorm(trueetafuc, eta1, "H1", 4))
 
-    print float(t)
+    print(t)
 
-f = open(loc+'error_u_l2_'+str(hsize), "w+")
-for err in error_u_l2:
-    f.write(str(err))
-    f.write("\n")
-f.close()
+# f = open(loc+'error_u_l2_'+str(hsize), "w+")
+# for err in error_u_l2:
+#     f.write(str(err))
+#     f.write("\n")
+# f.close()
 
 f2 = open(loc+'error_eta_l2_'+str(hsize), "w+")
 for err in error_eta_l2:
@@ -256,14 +256,14 @@ for err in error_eta_l2:
     f2.write("\n")
 f2.close()
 
-f = open(loc+'error_u_h1_'+str(hsize), "w+")
-for err in error_u_h1:
-    f.write(str(err))
-    f.write("\n")
-f.close()
+# f = open(loc+'error_u_h1_'+str(hsize), "w+")
+# for err in error_u_h1:
+#     f.write(str(err))
+#     f.write("\n")
+# f.close()
 
-f2 = open(loc+'error_eta_h1_'+str(hsize), "w+")
-for err in error_eta_h1:
-    f2.write(str(err))
-    f2.write("\n")
-f2.close()
+# f2 = open(loc+'error_eta_h1_'+str(hsize), "w+")
+# for err in error_eta_h1:
+#     f2.write(str(err))
+#     f2.write("\n")
+# f2.close()

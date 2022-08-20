@@ -1,7 +1,7 @@
 from fenics import *
 import matplotlib
 matplotlib.use('Agg')
-font = {'family' : 'normal', 'size'   : 22}
+font = {'family': 'normal', 'size': 22}
 matplotlib.rc('font', **font)
 import numpy as np
 import matplotlib.pyplot as plt

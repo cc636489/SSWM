@@ -27,12 +27,13 @@ time-varying boundary conditions, wind drag coefficient and bottom friction coef
 Dependencies:
 -------------
 
--   Fenics(2017.1.0)
--   chaospy(2.2.3)
--   numpy(1.13.3)
--   scipy(0.19.1)
--   sympy(1.1.1)
--   netCDF4(1.4.0)
+-   Fenics(2019.1.0)
+-   chaospy(3.2.9)
+-   numpy(1.18.1)
+-   scipy(1.4.1)
+-   sympy(1.5.1)
+-   netCDF4(1.5.3)
+-   python(3.8.2)
 
 Inputs:
 ------------

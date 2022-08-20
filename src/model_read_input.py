@@ -117,7 +117,6 @@ class ModelReadInput:
         self.include_crosswind = include_crosswind
         self.include_auxiliary_viscosity = include_auxiliary_viscosity
         self.include_interior_penalty = include_interior_penalty
-        self.sigma = sigma
         self.les_parameters = les_parameters
         self.DEBUG_mode = DEBUG_mode  # not fully implemented yet
         self.USE_pvd = USE_pvd
@@ -126,7 +125,6 @@ class ModelReadInput:
 
         self.wind_x = wind_x
         self.wind_y = wind_y
-        self.wind_scheme = wind_scheme
 
         self.tidal_amplitude = tidal_amplitude
         self.tidal_period = tidal_period

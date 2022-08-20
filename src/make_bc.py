@@ -1,6 +1,6 @@
 
 
-from fenics import MeshFunction, FacetFunction, SubDomain, near, DirichletBC, Expression, Constant
+from fenics import MeshFunction, SubDomain, near, DirichletBC, Expression, Constant
 from make_sto_modes import make_sto_modes
 from numpy import zeros, pi
 import sympy as sp
@@ -33,7 +33,7 @@ def make_boundary_object_list(boundary_u_dict, boundary_eta_dict, pc_basis_str, 
     if isinstance(bc_file_name, str):
         boundaries = MeshFunction("size_t", mesh, bc_file_name)
     elif bc_file_name is None:
-        boundaries = FacetFunction("size_t", mesh)
+        boundaries = MeshFunction("size_t", mesh, mesh.topology().dim()-1)
 
         # this 4 class only used for strong imposed non-penetration bc.==> maybe not
         class Left(SubDomain):

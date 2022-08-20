@@ -11,8 +11,8 @@ def make_initial_object_list(init_u_dict, init_eta_dict, pc_basis_str, u_functio
     n_modes = pc_basis_str.get("n_modes")
 
     # check if the keys is entered right.
-    key_u = init_u_dict.keys()
-    key_eta = init_eta_dict.keys()
+    key_u = list(init_u_dict.keys())
+    key_eta = list(init_eta_dict.keys())
     if len(key_u) != 1:
         raise TypeError("enter more than one initial condition for u! not allowed! Exit program...")
     if len(key_eta) != 1:

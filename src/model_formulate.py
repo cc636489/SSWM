@@ -1,9 +1,7 @@
 
 
 from fenics import inner, grad, DOLFIN_EPS, dx, ds, dS, \
-    CellSize, div, dot, conditional, gt, FacetNormal, FacetArea, jump, Expression, pi, Constant, FacetFunction, as_vector, \
-    avg
-# from fenics import *
+    CellDiameter, div, dot, conditional, gt, FacetNormal, FacetArea, jump, as_vector, avg
 
 
 class DetModelFormulate:
@@ -78,7 +76,7 @@ class DetModelFormulate:
         self.F_p_corr = 0
         self.F_u_corr = 0
 
-        self.h = CellSize(self.initiate.mesh)
+        self.h = CellDiameter(self.initiate.mesh)
         self.h_edge = FacetArea(self.initiate.mesh)('+')
         self.n = FacetNormal(self.initiate.mesh)
         # self.tau1 = 0.5*h*pow(4.0*nu/h+2.0*u_norm, -1.0)
@@ -305,7 +303,7 @@ class StoModelFormulate:
         self.F_u_corr = 0
         self.R = 0
 
-        self.h = CellSize(self.initiate.mesh)
+        self.h = CellDiameter(self.initiate.mesh)
         self.h_edge = FacetArea(self.initiate.mesh)('+')
         self.n = FacetNormal(self.initiate.mesh)
         # self.tau1 = 0.5*h*pow(4.0*nu/h+2.0*u_norm, -1.0)

@@ -1,14 +1,14 @@
 
-
+import numpy
 from chaospy import Uniform, orth_ttr, J
 
 
 def make_sto_basis(dist_name, sto_poly_deg, sto_poly_dim, co_eff):
 
     if dist_name == "uniform":
-        if len(co_eff)/2 != sto_poly_dim:
+        if len(co_eff) / 2 != sto_poly_dim:
             raise TypeError("size of co_eff is not matching the dimension of polynomial chaos basis!")
-        if any([co_eff[2 * z] > co_eff[2 * z + 1] for z in range(len(co_eff) / 2)]):
+        if any([co_eff[2 * z] > co_eff[2 * z + 1] for z in range(len(co_eff) // 2)]):
             raise TypeError("co_eff value should be in order as lower-high-lower-high, invalid number entering!")
     elif dist_name == "gaussian":
         if len(co_eff)/2 != sto_poly_dim:
@@ -17,7 +17,7 @@ def make_sto_basis(dist_name, sto_poly_deg, sto_poly_dim, co_eff):
         raise TypeError("Only implement uniform and gaussian distribution! dist_name not found!")
 
     if dist_name == "uniform":
-        ker_cis = [Uniform(co_eff[2 * z], co_eff[2 * z + 1]) for z in range(len(co_eff) / 2)]
+        ker_cis = [Uniform(co_eff[2 * z], co_eff[2 * z + 1]) for z in range(len(co_eff) // 2)]
         cp_string = "J("
         for ii in range(len(ker_cis)):
             cp_string = cp_string + "ker_cis[" + str(ii)+"]"

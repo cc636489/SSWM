@@ -1,6 +1,7 @@
 
 
-from fenics import Constant, interpolate, project, Expression, as_vector, sqrt
+#from fenics import Constant, interpolate, project, compile_cpp_code, Expression, CompiledExpression, as_vector, sqrt
+from dolfin import *
 from make_sto_modes import make_sto_modes
 from netCDF4 import Dataset
 
@@ -8,7 +9,7 @@ from netCDF4 import Dataset
 def make_bath(bath_dict, pc_basis_str, bath_function_space):
 
     # check if the key are entered right.
-    key = bath_dict.keys()
+    key = list(bath_dict.keys())
     n_modes = pc_basis_str.get("n_modes")
     
     if len(key) != 1:
@@ -97,29 +98,31 @@ def make_bath(bath_dict, pc_basis_str, bath_function_space):
             bath_expression = BottomExpression2(element=bath_function_space.ufl_element())
             bath_function = interpolate(bath_expression, bath_function_space)
         elif value[0] == "type3":
-            code = '''
+            code = """
 
-namespace dolfin {
+#include <dolfin/function/Expression.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/eigen.h>
 
-struct node {
-    double x;
-    double y;
-    double v;
-    node *next;
-};
-
-class MyFun : public Expression
+class MyFun : public dolfin::Expression
 {
+    struct node {
+        double x;
+        double y;
+        double v;
+        node *next;
+    };
+    
     private:
         node *root;
 
     public:
 
-        MyFun(): Expression()
+        MyFun(): dolfin::Expression()
         {
             root = new node;
             root->next = 0;
-        };
+        }
 
         void update(double _x, double _y, double _v)
         {
@@ -129,27 +132,31 @@ class MyFun : public Expression
             newNode->v = _v;
             newNode->next = root;
             root = newNode;
-        };
+        }
 
-        void eval(Array<double>& values, const Array<double>& x) const
+        void eval(Eigen::Ref<Eigen::VectorXd> values, Eigen::Ref<const Eigen::VectorXd> x) const override
         {
             double vv = findval(x[0], x[1]);
             values[0] = vv;
+            
             //cout << x[0] << "  " << x[1] << "  " << vv << endl;
             //cout << "  " << endl;
-        };
+        }
 
         double findval(double _x, double _y) const
         {
             node *p = root;
             while (p->next != 0)
             {
+
             // Assume that root node has biggest x-value.
             // Traverse down the list until p->x = _x and p->y = _y, then assign p->v to _v, and return value, break.
+                
                 if ( (fabs(p->x - _x)<1.0e-4) && (fabs(p->y - _y)<1.0e-4) )
                 {
                     // cout << fabs(p->x-_x) << "  " << fabs(p->y-_y) << " " << p->x << " " << _x << " " 
                     // << p->y << " " << _y << endl;
+                
                     double find = p->v;
                     return find;
                 }
@@ -160,18 +167,26 @@ class MyFun : public Expression
             }
             return 0;
 
-        };
+        }
 
 };
-};
 
-'''
+PYBIND11_MODULE(SIGNATURE, m)
+{
+  pybind11::class_<MyFun, std::shared_ptr<MyFun>, dolfin::Expression>(m, "MyFun").def(pybind11::init<>());
+}
+
+"""
             nc = Dataset(value[1], 'r', format='NETCDF4')
             y_coord = nc.variables['y_coord'][:].data.tolist()
             x_coord = nc.variables['x_coord'][:].data.tolist()
             bath_depth = nc.variables['bathy'][:].data.tolist()
             if n_modes == 1:
-                bath_expression = Expression(code, element=bath_function_space.ufl_element())
+                #bath = Expression(code, element=bath_function_space.ufl_element())
+                #bath_expression = CompiledExpression(compile_cpp_code(code).MyFun(), element=bath_function_space.ufl_element())
+                bath_expression = CompiledExpression(compile_cpp_code(code).MyFun(), degree=1)
+                type(bath_expression)
+                print("Chen I am okay here...", type(bath_expression))
                 for jj in range(len(x_coord)):
                     bath_expression.update(x_coord[jj], y_coord[jj], bath_depth[jj])
                 bath_function = interpolate(bath_expression, bath_function_space)

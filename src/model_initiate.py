@@ -1,6 +1,5 @@
 
-
-from fenics import *
+from dolfin import *
 from netCDF4 import Dataset
 from make_sto_basis import make_sto_basis
 from make_sto_ijk import make_sto_ijk
