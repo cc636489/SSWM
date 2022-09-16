@@ -46,7 +46,7 @@ class LES(object):
         _solver = LinearVariationalSolver(eddy_viscosity_problem)
         _solver.parameters["linear_solver"] = "lu"
         _solver.parameters["symmetric"] = True
-        _solver.parameters["lu_solver"]["reuse_factorization"] = True
+        #_solver.parameters["lu_solver"]["reuse_factorization"] = True
         _solver.solve()
 
         return self.eddy_viscosity

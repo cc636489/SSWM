@@ -36,5 +36,4 @@ def make_sto_basis(dist_name, sto_poly_deg, sto_poly_dim, co_eff):
         raise TypeError("Only implement uniform and gaussian distribution! dist_name not found!")
     pc_basis_str = {"name": dist_name, "dim": sto_poly_dim, "order": sto_poly_deg, "n_modes": n_modes, "co_eff": co_eff,
                     "basis": orthogonal_pol, "joint_cdf": joint_cdf, "joint_pdf": joint_pdf}
-
     return pc_basis_str

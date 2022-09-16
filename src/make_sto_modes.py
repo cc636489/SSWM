@@ -1,6 +1,6 @@
 
 from subprocess import check_call
-#from chaospy import poly
+from chaospy import poly
 import sympy as sp
 from numpy import pi
 
@@ -15,6 +15,8 @@ def make_sto_modes(pc_basis_str, *args):
     if dim is False or orthogonal_pol is False or joint_pdf is False or coefficient is False:
         raise TypeError("obtain NULL value from pc basis structure! Exit program...")
 
+    poly.base.POWER = "**"
+    poly.base.SEP = "*"
     str_x = "x = sp.Symbol('x[0]')"
     str_y = "y = sp.Symbol('x[1]')"
     str_t = "t = sp.Symbol('t')"

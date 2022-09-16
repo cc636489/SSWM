@@ -4,6 +4,7 @@
 from dolfin import *
 from make_sto_modes import make_sto_modes
 from netCDF4 import Dataset
+import numpy as np
 
 
 def make_bath(bath_dict, pc_basis_str, bath_function_space):
@@ -58,7 +59,7 @@ def make_bath(bath_dict, pc_basis_str, bath_function_space):
         if value[0] == "type1":
             bath_list_at3, bath_list_at4 = make_sto_modes(pc_basis_str, value[3], value[4])
 
-            class BottomExpression(Expression):
+            class BottomExpression(UserExpression):
                 def eval(self, mode, x):
                     if x[0] < value[1] or x[0] > value[2]:
                         for ii in range(n_modes):
@@ -75,7 +76,7 @@ def make_bath(bath_dict, pc_basis_str, bath_function_space):
         elif value[0] == "type2":
             bath_list_at3, bath_list_at4 = make_sto_modes(pc_basis_str, value[2], value[3])
 
-            class BottomExpression2(Expression):
+            class BottomExpression2(UserExpression):
                 def eval(self, mode, x):
                     if x[0] <= value[1]:
                         for ii in range(n_modes):
@@ -106,74 +107,44 @@ def make_bath(bath_dict, pc_basis_str, bath_function_space):
 
 class MyFun : public dolfin::Expression
 {
-    struct node {
-        double x;
-        double y;
-        double v;
-        node *next;
-    };
-    
-    private:
-        node *root;
+    public:
+        
+        Eigen::VectorXd xcoordinate;
+        Eigen::VectorXd ycoordinate;
+        Eigen::VectorXd bathymetryValue;
 
     public:
 
-        MyFun(): dolfin::Expression()
-        {
-            root = new node;
-            root->next = 0;
-        }
-
-        void update(double _x, double _y, double _v)
-        {
-            node *newNode = new node;
-            newNode->x = _x;
-            newNode->y = _y;
-            newNode->v = _v;
-            newNode->next = root;
-            root = newNode;
-        }
+        MyFun(): dolfin::Expression() {}
 
         void eval(Eigen::Ref<Eigen::VectorXd> values, Eigen::Ref<const Eigen::VectorXd> x) const override
         {
-            double vv = findval(x[0], x[1]);
+            double vv = findval(x);
             values[0] = vv;
-            
-            //cout << x[0] << "  " << x[1] << "  " << vv << endl;
-            //cout << "  " << endl;
         }
 
-        double findval(double _x, double _y) const
+        double findval(Eigen::Ref<const Eigen::VectorXd> x) const
         {
-            node *p = root;
-            while (p->next != 0)
+            for(int index=0; index < xcoordinate.size(); index++)
             {
-
-            // Assume that root node has biggest x-value.
-            // Traverse down the list until p->x = _x and p->y = _y, then assign p->v to _v, and return value, break.
-                
-                if ( (fabs(p->x - _x)<1.0e-4) && (fabs(p->y - _y)<1.0e-4) )
+                if ( (fabs(x[0] - xcoordinate[index])<1.0e-4) && (fabs(x[1] - ycoordinate[index])<1.0e-4) )
                 {
-                    // cout << fabs(p->x-_x) << "  " << fabs(p->y-_y) << " " << p->x << " " << _x << " " 
-                    // << p->y << " " << _y << endl;
-                
-                    double find = p->v;
-                    return find;
-                }
-                else
-                {
-                    p = p->next;
+                    return bathymetryValue[index];
                 }
             }
             return 0;
-
         }
-
 };
 
 PYBIND11_MODULE(SIGNATURE, m)
 {
-  pybind11::class_<MyFun, std::shared_ptr<MyFun>, dolfin::Expression>(m, "MyFun").def(pybind11::init<>());
+  pybind11::class_<MyFun, std::shared_ptr<MyFun>, dolfin::Expression>
+    (m, "MyFun")
+    .def(pybind11::init<>())
+    .def_readwrite("xcoordinate", &MyFun::xcoordinate)
+    .def_readwrite("ycoordinate", &MyFun::ycoordinate)
+    .def_readwrite("bathymetryValue", &MyFun::bathymetryValue)
+    ;
 }
 
 """
@@ -182,19 +153,22 @@ PYBIND11_MODULE(SIGNATURE, m)
             x_coord = nc.variables['x_coord'][:].data.tolist()
             bath_depth = nc.variables['bathy'][:].data.tolist()
             if n_modes == 1:
-                #bath = Expression(code, element=bath_function_space.ufl_element())
-                #bath_expression = CompiledExpression(compile_cpp_code(code).MyFun(), element=bath_function_space.ufl_element())
-                bath_expression = CompiledExpression(compile_cpp_code(code).MyFun(), degree=1)
-                type(bath_expression)
-                print("Chen I am okay here...", type(bath_expression))
-                for jj in range(len(x_coord)):
-                    bath_expression.update(x_coord[jj], y_coord[jj], bath_depth[jj])
+                bath_expression = CompiledExpression(compile_cpp_code(code).MyFun(), element=bath_function_space.ufl_element())
+                
+                bath_expression.xcoordinate = np.array(x_coord, dtype=float)
+                bath_expression.ycoordinate = np.array(y_coord, dtype=float)
+                bath_expression.bathymetryValue = np.array(bath_depth, dtype=float)
+                
+                
                 bath_function = interpolate(bath_expression, bath_function_space)
             else:
-                bath = Expression(code, element=bath_function_space.sub(0).ufl_element())
-                for jj in range(len(x_coord)):
-                    bath.update(x_coord[jj], y_coord[jj], bath_depth[jj])
-                bath_string = "[bath"
+                bath_expression = CompiledExpression(compile_cpp_code(code).MyFun(), element=bath_function_space.sub(0).ufl_element())
+                
+                bath_expression.xcoordinate = np.array(x_coord, dtype=float)
+                bath_expression.ycoordinate = np.array(y_coord, dtype=float)
+                bath_expression.bathymetryValue = np.array(bath_depth, dtype=float)
+                
+                bath_string = "[bath_expression"
                 for _ in range(n_modes-1):
                     bath_string += ", 0"
                 bath_string += "]"

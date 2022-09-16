@@ -12,15 +12,16 @@ def make_boundary_object_list(boundary_u_dict, boundary_eta_dict, pc_basis_str, 
     # check input boundary condition keys.
     n_modes = pc_basis_str.get("n_modes")
     n_dim = pc_basis_str.get("dim")
-    n_u_keys = len(boundary_u_dict.keys())
-    n_eta_keys = len(boundary_eta_dict.keys())
+    u_keys = list(boundary_u_dict.keys())
+    eta_keys = list(boundary_eta_dict.keys())
+    n_u_keys = len(u_keys)
+    n_eta_keys = len(eta_keys)
     if not (isinstance(bc_file_name, str) or bc_file_name is None):
         raise TypeError("wrong type bc_file_name! Exit Program...")
-    if all([isinstance(boundary_u_dict.keys()[i], int) for i in range(n_u_keys)]) is False:
+    if all([isinstance(u_keys[i], int) for i in range(n_u_keys)]) is False:
         raise TypeError("wrong key type of boundary u! Exit Program...")
-    if all([isinstance(boundary_eta_dict.keys()[i], int) for i in range(n_eta_keys)]) is False:
+    if all([isinstance(eta_keys[i], int) for i in range(n_eta_keys)]) is False:
         raise TypeError("wrong key type of boundary eta! Exit Program...")
-
     # initialize returned bc object list.
     u_bc_list = []
     eta_bc_list = []

@@ -10,6 +10,7 @@ from make_ic import make_initial_object_list
 from make_bc import make_boundary_object_list
 from make_wind import MakeWind
 from make_les import LES
+import numpy as np
 
 
 parameters["form_compiler"]["cpp_optimize"] = True
@@ -250,114 +251,86 @@ class ModelInitiate:
         """ build up 10 meter wind velocity object. """
         code = '''
 
-            namespace dolfin {
+#include <dolfin/function/Expression.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/eigen.h>
 
-            struct node {
-                double x;
-                double y;
-                double v;
-                node *next;
-            };
+class MyScalar : public dolfin::Expression
+{
+    public:
+        
+        Eigen::VectorXd xcoordinate;
+        Eigen::VectorXd ycoordinate;
+        Eigen::VectorXd scalarValue;
 
-            class MyFun : public Expression
+    public:
+
+        MyScalar(): dolfin::Expression() {}
+
+        void eval(Eigen::Ref<Eigen::VectorXd> values, Eigen::Ref<const Eigen::VectorXd> x) const override
+        {
+            double vv = findval(x);
+            values[0] = vv;
+        }
+
+        double findval(Eigen::Ref<const Eigen::VectorXd> x) const
+        {
+            for(int index=0; index < xcoordinate.size(); index++)
             {
-                private:
-                    node *root;
+                if ( (fabs(x[0] - xcoordinate[index])<1.0e-4) && (fabs(x[1] - ycoordinate[index])<1.0e-4) )
+                {
+                    return scalarValue[index];
+                }
+            }
+            return 0;
+        }
+};
 
-                public:
-
-                    MyFun(): Expression()
-                    {
-                        root = new node;
-                        root->next = 0;
-                    };
-
-                    void initial(double _x, double _y, double _v)
-                    {
-                        node *newNode = new node;
-                        newNode->x = _x;
-                        newNode->y = _y;
-                        newNode->v = _v;
-                        newNode->next = root;
-                        root = newNode;
-                        //cout << _v << endl;
-                    };
-
-                    void update(double _x, double _y, double _v)
-                    {
-                        node *p = findp(_x, _y);
-                        //cout << p->v << "  " << _v << endl;
-                        p->v = _v;
-                    };
-
-                    void eval(Array<double>& values, const Array<double>& x) const
-                    {
-                        double vv = findval(x[0], x[1]);
-                        values[0] = vv;
-                        //cout << x[0] << "  " << x[1] << "  " << vv << endl;
-                        //cout << "  " << endl;
-                    };
-
-                    node * findp(double _x, double _y) const
-                    {
-                        node *p = root;
-                        while (p->next != 0)
-                        {
-                            if ( (fabs(p->x - _x)<1.0e-4) && (fabs(p->y - _y)<1.0e-4) )
-                            {
-                                return p;
-                            }
-                            else
-                            {
-                                p = p->next;
-                            }
-                        }
-                        return 0;
-                    }
-
-                    double findval(double _x, double _y) const
-                    {
-                        node *p = root;
-                        while (p->next != 0)
-                        {   
-                            if ( (fabs(p->x - _x)<1.0e-4) && (fabs(p->y - _y)<1.0e-4) )
-                            {
-                                //cout << fabs(p->x-_x) << "  " << fabs(p->y-_y) << endl;
-                                double find = p->v;
-                                return find;
-                            }
-                            else
-                            {
-                                p = p->next;
-                            }
-                        }
-                        return 0;
-                    };
-
-            };
-            };
-
+PYBIND11_MODULE(SIGNATURE, m)
+{
+  pybind11::class_<MyScalar, std::shared_ptr<MyScalar>, dolfin::Expression>
+    (m, "MyScalar")
+    .def(pybind11::init<>())
+    .def_readwrite("xcoordinate", &MyScalar::xcoordinate)
+    .def_readwrite("ycoordinate", &MyScalar::ycoordinate)
+    .def_readwrite("scalarValue", &MyScalar::scalarValue)
+    ;
+}
             '''
-        self.wind_para_x = Expression(cppcode=code, element=self.B.ufl_element(), domain=self.mesh)
-        self.wind_para_y = Expression(cppcode=code, element=self.B.ufl_element(), domain=self.mesh)
-        self.pressure = Expression(cppcode=code, element=self.B.ufl_element(), domain=self.mesh)
+        self.wind_para_x = CompiledExpression(compile_cpp_code(code).MyScalar(), element=self.B.ufl_element(), domain=self.mesh)
+        self.wind_para_y = CompiledExpression(compile_cpp_code(code).MyScalar(), element=self.B.ufl_element(), domain=self.mesh)
+        self.pressure    = CompiledExpression(compile_cpp_code(code).MyScalar(), element=self.B.ufl_element(), domain=self.mesh)
+ 
         nc = Dataset(self.inputs.input_dir + self.inputs.bath_file, 'r', format='NETCDF4')
         self.x_coord = nc.variables['x_coord'][:].data.tolist()
         self.y_coord = nc.variables['y_coord'][:].data.tolist()
         self.x_deg = nc.variables['lon'][:].data.tolist()
         self.y_deg = nc.variables['lat'][:].data.tolist()
-        for st in range(len(self.x_coord)):
-            self.wind_para_x.initial(self.x_coord[st], self.y_coord[st], 0.0)
-            self.wind_para_y.initial(self.x_coord[st], self.y_coord[st], 0.0)
-            self.pressure.initial(self.x_coord[st], self.y_coord[st], 1013.0)
+
+        self.wind_para_x.xcoordinate = np.array(self.x_coord, dtype=float)
+        self.wind_para_x.ycoordinate = np.array(self.y_coord, dtype=float)
+        self.wind_para_x.scalarValue = np.full(len(self.x_coord), 0.0, dtype=float)
+
+        self.wind_para_y.xcoordinate = np.array(self.x_coord, dtype=float)
+        self.wind_para_y.ycoordinate = np.array(self.y_coord, dtype=float)
+        self.wind_para_y.scalarValue = np.full(len(self.x_coord), 0.0, dtype=float)
+
+        self.pressure.xcoordinate = np.array(self.x_coord, dtype=float)
+        self.pressure.ycoordinate = np.array(self.y_coord, dtype=float)
+        self.pressure.scalarValue = np.full(len(self.x_coord), 1013.0, dtype=float)
+
         self.wind = MakeWind(self.inputs)
 
         if self.inputs.wind_scheme == "powell":
-            self.wdrag = Expression(cppcode=code, element=self.B.ufl_element(), domain=self.mesh)
-            for st in range(len(self.x_coord)):
-                self.wdrag.initial(self.x_coord[st], self.y_coord[st], 0.00075)
+            self.wdrag = CompiledExpression(compile_cpp_code(code).MyScalar(), element=self.B.ufl_element(), domain=self.mesh)
+
+            self.wdrag.xcoordinate = np.array(self.x_coord, dtype=float)
+            self.wdrag.ycoordinate = np.array(self.y_coord, dtype=float)
+            self.wdrag.scalarValue = np.full(len(self.x_coord), 0.00075, dtype=float)
+
         elif self.inputs.wind_scheme == "garratt":
             self.wdrag = 0.001 * (0.75 + 40. / 600. * sqrt(self.wind_para_x ** 2 + self.wind_para_y ** 2))
+
         else:
             print("not implement this wind drag coefficient scheme yet.")
 

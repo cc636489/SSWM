@@ -3,7 +3,7 @@ from fenics import *
 import numpy as np
 import subprocess
 import sys
-sys.path.insert(0, '/workspace/Documentation/Research_Doc/SFEM_Doc/7-SSWM-github/src')
+sys.path.insert(0, '/Users/chenchen/gloria/7-SSWM-github/src/')
 from make_sto_basis import make_sto_basis 
 import matplotlib
 matplotlib.use('Agg')
@@ -17,31 +17,32 @@ import seaborn as sns
 import matplotlib.ticker as mtick
 
 name = "test2"
-input_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/test2_res/convergence_inprobability_test_result_dimension_2/" 
-output_dir = input_dir
-mesh_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/7-SSWM-github/input/"
-st_order = 3
+#input_dir = "/Users/chenchen/gloria/4-NS-results-and-tests/test2_res/convergence_inprobability_test_result_dimension_2/"
+input_dir = "/Users/chenchen/gloria/test_fenics/SupportingRun/test2_convergence_at_space_25.0_25.0_time_1s_dimension_1/"
+output_dir = "/Users/chenchen/gloria/test_fenics/SupportingRun/test2_convergence_at_space_25.0_25.0_time_1s_dimension_1/"
+mesh_dir = "/Users/chenchen/gloria/7-SSWM-github/input/"
+st_order = 4
 u_file = "u_used_for_read_back_"+name.lower()+"_stochastic_order_"+str(st_order)+"_"
 eta_file = "eta_used_for_read_back_"+name.lower()+"_stochastic_order_"+str(st_order)+"_"
 
-n_sample = 50000
+n_sample = 5000
 
-test_node_x = [25.0, 50.0, 75.0]
-test_node_y = [25.0, 25.0, 25.0]
+test_node_x = [25.0]
+test_node_y = [25.0]
 test_node_str =["1/4"]
 test_node_str_node_number = ["1/4"]
 
 dist_name = "uniform"
 sto_poly_deg = st_order
-sto_poly_dim = 2 
-coefficient = [0.8, 1.2, 1.0, 2.0]
+sto_poly_dim = 1
+coefficient = [0.8, 1.2]
 
 basis = make_sto_basis(dist_name, sto_poly_deg, sto_poly_dim, coefficient)
 orth = basis["basis"]
 JointCDF = basis.get("joint_cdf")
 n_modes = basis["n_modes"]
 
-time_step = 17
+time_step = 3
 step_size = 0.5
 
 #mesh = Mesh(mesh_dir + mesh_file)
@@ -65,7 +66,7 @@ samples = JointCDF.sample(n_sample)
 
 for k in range(time_step-1, time_step):
 
-    print "start: timestep = " + str(k)
+    print("start: timestep = " + str(k))
 
     dataset_u = "WaterVelocity/vector_%d"%k
     dataset_eta = "SurfaceElevation/vector_%d"%k
@@ -78,7 +79,7 @@ for k in range(time_step-1, time_step):
 
     for i, item in enumerate(test_nodes): 
 
-        print "    test_nodes: " + str(i) + " : x = " + str(round(item[0], 2)) + "; y = " + str(round(item[1], 2)) 
+        print("    test_nodes: " + str(i) + " : x = " + str(round(item[0], 2)) + "; y = " + str(round(item[1], 2)))
 
         u1_list = [u[p](item[0], item[1])[0] for p in range(n_modes)]
         v1_list = [u[p](item[0], item[1])[1] for p in range(n_modes)]

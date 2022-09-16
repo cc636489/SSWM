@@ -3,11 +3,11 @@
 ##################################################################
 # output file name string
 input_dir = "/Users/chenchen/gloria/7-SSWM-github/input/"
-output_dir = "/Users/chenchen/gloria/test_fenics/SupportingRun/test5_Spurdike/"
-output_str = "test5_generalized_1.5_0.0015"
-bath_file = " "
+output_dir = "Users/chenchen/gloria/test_fenics/SupportingRun/test5_Spurdike/"
+output_str = "test5_generalized_"
+bath_file = ""
 mesh_file = "dike.xml"
-wind_file = " "
+wind_file = ""
 boundary_file = "dike_facet_region.xml"
 
 # stochastic input
@@ -30,36 +30,36 @@ domain = {"importfile": input_dir+mesh_file}
 
 # stochastic coefficient # if contains sin(), cos(), should use sympy sin and sympy cos!!!!!!!!!!
 sto_viscosity = "1e-6"
-sto_bottomDrag = "0.0015"
+sto_bottomDrag = "0.015"
 sto_windDrag = "0.0"
 
 # terms control
 include_viscosity = True
 include_convection = True
 linear_divergence = False
-include_les = True
+include_les = False
 include_wind_stress = False
 include_const_wind = False
 wind_x = 1.0
 wind_y = 0.0
 include_bottom_stress = True
 include_atmospheric_pressure = False
-include_supg = True
-include_crosswind = True
+include_supg = False
+include_crosswind = False
 include_auxiliary_viscosity = False
-include_interior_penalty = False 
-les_parameters = {'smagorinsky_coefficient': 1.5}
+include_interior_penalty = False
+les_parameters = {'smagorinsky_coefficient': 0.3}
 DEBUG_mode = False
 USE_pvd = False
-USE_HDF5 = True
+USE_HDF5 = False
 USE_iterative = False
 
 # time parameter setting
 tidal_amplitude = 0.75
 tidal_period = 12.41666*60*60
 start_time = 0.0
-end_time = 800
-time_step = 5.0
+end_time = 350
+time_step = 35.0
 theta = 1.0
 
 
@@ -95,9 +95,8 @@ initial_eta = {"flat": 0.0}
 # first way:
 bc_file = input_dir + boundary_file
 # boundary_u = {1: "no_slip", 2: "no_slip", 3: "no_slip"}
-boundary_u = {1: (0.26052, 0.0), 2: (0.26052, 0.0), 3: "free_slip_in_x", 4: "free_slip_in_y"}
-boundary_eta = {1: 0.0, 2: 0.0}
-#boundary_eta = {}
+boundary_u = {1: (0.26052, 0.0), 3: "free_slip_in_x", 4: "free_slip_in_y"}
+boundary_eta = {2: 0.0}
 # second way:
 # bc_file = None
 # boundary_u = {1: "free_slip_in_y", 2: "free_slip_in_y", 3: "free_slip_in_x", 4: "free_slip_in_x"}

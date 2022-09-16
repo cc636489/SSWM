@@ -1,13 +1,12 @@
 
 
-from fenics import interpolate, Expression
+from fenics import interpolate, Expression, UserExpression
 from make_sto_modes import make_sto_modes
 from random import random, seed
 
 
 def make_initial_object_list(init_u_dict, init_eta_dict, pc_basis_str, u_function_space, eta_function_space,
                              randomness):
-
     n_modes = pc_basis_str.get("n_modes")
 
     # check if the keys is entered right.
@@ -21,6 +20,7 @@ def make_initial_object_list(init_u_dict, init_eta_dict, pc_basis_str, u_functio
         raise TypeError("don't have this kind of initial condition for u implemented! Exit program...")
     if key_eta[0] != "flat" and key_eta[0] != "vary":
         raise TypeError("don't have this kind of initial condition for eta implemented! Exit program...")
+
 
     # check if the values is entered right
     value_u = init_u_dict.get(key_u[0])
@@ -46,6 +46,7 @@ def make_initial_object_list(init_u_dict, init_eta_dict, pc_basis_str, u_functio
     else:
         pass
 
+
     # make the stochastic initial condition for u and eta.
     if key_u[0] == "flat":
         temp_u, temp_v = make_sto_modes(pc_basis_str, str(value_u[0]), str(value_u[1]))
@@ -65,6 +66,7 @@ def make_initial_object_list(init_u_dict, init_eta_dict, pc_basis_str, u_functio
     if len(temp_eta) != n_modes:
         raise TypeError("temp_eta has wrong length! Should be equal to n_modes! not allowed!")
 
+
     u_ic_list = []
     eta_ic_list = []
     for ii in range(n_modes):
@@ -72,13 +74,18 @@ def make_initial_object_list(init_u_dict, init_eta_dict, pc_basis_str, u_functio
         u_ic_list.append(temp_v[ii])
         eta_ic_list.append(temp_eta[ii])
 
+
     if randomness:
         random_u = RandomUInitialConditions(element=u_function_space.ufl_element(), n_modes=n_modes)
+
         u_ic_expression = random_u
+
     else:
         u_ic_expression = Expression(u_ic_list, element=u_function_space.ufl_element())
 
+
     u_ic_function = interpolate(u_ic_expression, u_function_space)
+
 
     if n_modes == 1:
         eta_ic_function = interpolate(Expression(eta_ic_list[0], element=eta_function_space.ufl_element()),
@@ -90,9 +97,10 @@ def make_initial_object_list(init_u_dict, init_eta_dict, pc_basis_str, u_functio
     return u_ic_function, eta_ic_function
 
 
-class RandomUInitialConditions(Expression):
+class RandomUInitialConditions(UserExpression):
 
     def __init__(self, **kwargs):
+        super().__init__(element=kwargs["element"])
         self.element = kwargs["element"]
         self.n_modes = kwargs["n_modes"]
         seed(self.n_modes)

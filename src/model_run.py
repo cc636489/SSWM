@@ -288,27 +288,34 @@ class ModelRun:
     def _update_wind(self):
         """ update wind field if it's time dependent. """
         self.initiate.wind.get_prepared(current_time=float(self.initiate.t))
+        print("Chen here in update wind, start...")
         wind_para_x_list = []
         wind_para_y_list = []
         pressure_list = []
+        
         if self.inputs.wind_scheme == "powell":
             wdrag_list = []
+        
         for ts in range(len(self.initiate.x_deg)):
+        
             wind_x, wind_y, press = self.initiate.wind.get_wind_x_wind_y(
                     x_coord_deg=self.initiate.x_deg[ts], y_coord_deg=self.initiate.y_deg[ts])
             wind_para_x_list.append(wind_x)
             wind_para_y_list.append(wind_y)
             pressure_list.append(press)
+            
             if self.inputs.wind_scheme == "powell":
                 drag = self.initiate.wind.get_wind_drag(x_coord_deg=self.initiate.x_deg[ts], 
                                                         y_coord_deg=self.initiate.y_deg[ts])
                 wdrag_list.append(drag)
-        for sm in range(len(self.initiate.x_coord)):
-            self.initiate.wind_para_x.update(self.initiate.x_coord[sm], self.initiate.y_coord[sm], wind_para_x_list[sm])
-            self.initiate.wind_para_y.update(self.initiate.x_coord[sm], self.initiate.y_coord[sm], wind_para_y_list[sm])
-            self.initiate.pressure.update(self.initiate.x_coord[sm], self.initiate.y_coord[sm], pressure_list[sm])
-            if self.inputs.wind_scheme == "powell":
-                self.initiate.wdrag.update(self.initiate.x_coord[sm], self.initiate.y_coord[sm], wdrag_list[sm])
+
+        self.initiate.wind_para_x.scalarValue = np.array(wind_para_x_list, dtype=float)
+        self.initiate.wind_para_y.scalarValue = np.array(wind_para_y_list, dtype=float)
+        self.initiate.pressure.scalarValue = np.array(pressure_list, dtype=float)
+
+        if self.inputs.wind_scheme == "powell":
+            self.initiate.wdrag.scalarValue = np.array(wdrag_list, dtype=float)
+        print("Chen here in update wind, end...")
 
     def _update_les(self):
         """ update eddy viscosity field. """

@@ -13,11 +13,11 @@ from fenics import *
 
 
 name = "IKE"
-input_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"+name+"_stochastic/"
-output_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"+name+"_results/"
+input_dir = "/Users/chenchen/gloria/4-NS-results-and-tests/regression_test_stochastic/"+name+"_stochastic/"
+output_dir = "/Users/chenchen/gloria/test_fenics/SupportingRun/test_IKE_plot_line_meanvariance_fullevelop_truncateTime/"
 cc_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"
 time_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/4-NS-results-and-tests/regression_test_stochastic/"+name+"_bins/"
-mesh_dir = "/workspace/Documentation/Research_Doc/SFEM_Doc/7-SSWM-github/input/"
+mesh_dir = "/Users/chenchen/gloria/7-SSWM-github/input/"
 mesh_file = "Gulf_wind.xml"
 mean_u_file = "u_used_for_read_back_gulf_winds_ike_stochastic_00.h5"
 mean_eta_file = "eta_used_for_read_back_gulf_winds_ike_stochastic_00.h5"

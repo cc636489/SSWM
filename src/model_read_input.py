@@ -144,6 +144,9 @@ class ModelReadInput:
         self.rho_water = rho_water
         self.Gravity = Gravity
         self.one2ten = one2ten
+        self.wind_scheme = "powell"
+        self.sigma = 9.0 #ike
+        self.sigma = 4.0 #harvey
 
         self.bathymetry = bathymetry
 
