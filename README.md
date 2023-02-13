@@ -90,7 +90,7 @@ to zero)
 
 The following is the velocity profile comparison against experimental data.
 <p align="center">
-<img src="https://github.com/cc636489/research/blob/master/doc/Experimental_comparison.gif">
+<img src="https://github.com/cc636489/research/blob/master/doc/Experimental_comparison.png">
 </p>
 
 
@@ -100,22 +100,22 @@ SSWM Model Validation( Stochastic Part )
 Validation of the stochastic part of SSWM is conducted by comparing pdfs against its monto-carlo counterparts. The uncertain resources we considered here includes:
 -   uncertain initial condition (slosh test).
 <p align="center">
-<img src="https://github.com/cc636489/research/blob/master/doc/PDF_comparison_slosh.gif">
+<img src="https://github.com/cc636489/research/blob/master/doc/PDF_comparison_slosh.png">
 </p>
 
 -   uncertain bathymetry condition (hump test).
 <p align="center">
-<img src="https://github.com/cc636489/research/blob/master/doc/PDF_comparison_hump.gif">
+<img src="https://github.com/cc636489/research/blob/master/doc/PDF_comparison_hump.png">
 </p>
 
 -   uncertain boundary condition (inlet test).
 <p align="center">
-<img src="https://github.com/cc636489/research/blob/master/doc/PDF_comparison_Inlet.gif">
+<img src="https://github.com/cc636489/research/blob/master/doc/PDF_comparison_Inlet.png">
 </p>
 
 -   uncertain model parameter (hurricane tests).
 <p align="center">
-<img src="https://github.com/cc636489/research/blob/master/doc/PDF_comparison_hurricane_Harvey.gif">
+<img src="https://github.com/cc636489/research/blob/master/doc/PDF_comparison_hurricane_Harvey.png">
 </p>
 
 
