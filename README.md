@@ -27,13 +27,15 @@ time-varying boundary conditions, wind drag coefficient and bottom friction coef
 Dependencies:
 -------------
 
--   Fenics(2019.1.0):
--   chaospy(3.2.9)
--   numpy(1.18.1)
--   scipy(1.4.1)
--   sympy(1.5.1)
--   netCDF4(1.5.3)
--   python(3.8.2)
+-   Fenics(2018.1.0):
+-   chaospy(2.2.4)
+-   numpy(1.15.4)
+-   scipy(1.2.1)
+-   sympy(1.10.1)
+-   netCDF4(1.5.1.2)
+-   python(3.7.12)
+
+The best way to get all the dependencies ready on your local machine is through conda. Then use for example `conda activate fenics2018project` to activate your conda environment.
 
 Inputs:
 ------------
@@ -45,7 +47,7 @@ model input files:
 -   mesh file (in .xml format)
 -   bathymetry file (in netCDF4 format)
 -   boundary file (in .xml format)
--   Hurricane best tack input (in .txt format)
+-   Hurricane best track input (in .txt format)
 
 model input options:
 -   turn on/off DEBUG mode.
@@ -64,18 +66,60 @@ model output files:
 Execution:
 ----------
 
--   download the repository.
--   run all the test cases `python -v ./tests/test_*.py`.
+-   clone the repository.
 -   prepare model input files.
 -   modify model parameters in ../input/input_generalized.py
 -   run the program `python driver.py`.
 
-Model Verification:
--------------------
+SSWM Model Validation( Deterministic Part )
+---------------------------------------------
 
-Verification of the program is conducted by comparing to a well-known shallow water model ADCIRC. The following is the
+Validation of the deterministic part of SSWM is conducted by comparing to:
+-   analytical solution with convergence analysis.
+-   well-established numerical model
+-   experimental data
+
+The analytical solution with convergence analysis is opted out here. please find the reference [1] for more information.
+
+The following is the
 comparison of surface elevation between ADCIRC and SSWM(i.e. **mean surface elevation** with stochastic order setting
 to zero)
 <p align="center">
 <img src="https://github.com/cc636489/research/blob/master/doc/IKE_comparison_u_eta_with_atmos_pre_faster_animation.gif">
 </p>
+
+The following is the velocity profile comparison against experimental data.
+<p align="center">
+<img src="https://github.com/cc636489/SSWM/blob/master/doc/Experimental_comparison.gif">
+</p>
+
+
+SSWM Model Validation( Stochastic Part )
+---------------------------------------------
+
+Validation of the stochastic part of SSWM is conducted by comparing pdfs against its monto-carlo counterparts. The uncertain resources we considered here includes:
+-   uncertain initial condition (slosh test).
+<p align="center">
+<img src="https://github.com/cc636489/SSWM/blob/master/doc/PDF_comparison_slosh.gif">
+</p>
+
+-   uncertain bathymetry condition (hump test).
+<p align="center">
+<img src="https://github.com/cc636489/SSWM/blob/master/doc/PDF_comparison_hump.gif">
+</p>
+
+-   uncertain boundary condition (inlet test).
+<p align="center">
+<img src="https://github.com/cc636489/SSWM/blob/master/doc/PDF_comparison_Inlet.gif">
+</p>
+
+-   uncertain model parameter (hurricane tests).
+<p align="center">
+<img src="https://github.com/cc636489/SSWM/blob/master/doc/PDF_comparison_hurricane_Harvey.gif">
+</p>
+
+
+Reference
+----------
+
+[1] Chen C, Dawson C, Valseth E. Cross-mode stabilized stochastic shallow water systems using stochastic finite element methods[J]. Computer Methods in Applied Mechanics and Engineering, 2023, 405: 115873. (https://doi.org/10.1016/j.cma.2022.115873)
