@@ -27,7 +27,7 @@ time-varying boundary conditions, wind drag coefficient and bottom friction coef
 Dependencies:
 -------------
 
--   Fenics(2018.1.0):
+-   Fenics(2018.1.0)
 -   chaospy(2.2.4)
 -   numpy(1.15.4)
 -   scipy(1.2.1)
@@ -90,7 +90,7 @@ to zero)
 
 The following is the velocity profile comparison against experimental data.
 <p align="center">
-<img src="https://github.com/cc636489/SSWM/blob/master/doc/Experimental_comparison.gif">
+<img src="https://github.com/cc636489/research/blob/master/doc/Experimental_comparison.gif">
 </p>
 
 
@@ -100,22 +100,22 @@ SSWM Model Validation( Stochastic Part )
 Validation of the stochastic part of SSWM is conducted by comparing pdfs against its monto-carlo counterparts. The uncertain resources we considered here includes:
 -   uncertain initial condition (slosh test).
 <p align="center">
-<img src="https://github.com/cc636489/SSWM/blob/master/doc/PDF_comparison_slosh.gif">
+<img src="https://github.com/cc636489/research/blob/master/doc/PDF_comparison_slosh.gif">
 </p>
 
 -   uncertain bathymetry condition (hump test).
 <p align="center">
-<img src="https://github.com/cc636489/SSWM/blob/master/doc/PDF_comparison_hump.gif">
+<img src="https://github.com/cc636489/research/blob/master/doc/PDF_comparison_hump.gif">
 </p>
 
 -   uncertain boundary condition (inlet test).
 <p align="center">
-<img src="https://github.com/cc636489/SSWM/blob/master/doc/PDF_comparison_Inlet.gif">
+<img src="https://github.com/cc636489/research/blob/master/doc/PDF_comparison_Inlet.gif">
 </p>
 
 -   uncertain model parameter (hurricane tests).
 <p align="center">
-<img src="https://github.com/cc636489/SSWM/blob/master/doc/PDF_comparison_hurricane_Harvey.gif">
+<img src="https://github.com/cc636489/research/blob/master/doc/PDF_comparison_hurricane_Harvey.gif">
 </p>
 
 
